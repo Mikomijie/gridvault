@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  background-color: #FAF8FF;
+  color: #131B2E;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F2F3FF;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C0C7D4;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #707783;
+}
+
+/* Focus Ring Utility */
+:focus-visible {
+  outline: 2px solid #005EA4;
+  outline-offset: 2px;
+}
+
+/* Button Base Styles */
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* Form Elements */
+input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+  border: 1px solid #C0C7D4;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: #005EA4;
+  box-shadow: 0 0 0 2px rgba(0, 94, 164, 0.1);
+}
+
+/* Utilities */
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
