@@ -362,7 +362,7 @@ export default function LandingPage() {
                 <span className="text-[18px] font-semibold text-[#005ea4]">GridVault</span>
               </div>
               <p className="text-[12px] text-[#404752] leading-relaxed">
-                Sovereign enterprise clinical infrastructure engineered for Nigerian hospitals, multi-center health systems, and critical care units.
+                Offline-first clinical infrastructure for Nigerian hospitals, multi-center health systems, and critical care units.
               </p>
               <div className="flex items-center gap-1 text-[11px] font-bold text-[#006a62]">
                 <span className="text-[#006a62]">{Icons.lock}</span>
@@ -420,7 +420,7 @@ export default function LandingPage() {
           </div>
 
           <div className="pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-[12px] text-[#404752]">2026 GridVault Technologies Ltd. Empowering Nigerian Healthcare.</p>
+            <p className="text-[12px] text-[#404752]">2026 GridVault Technologies Ltd. Clinical infrastructure for Nigerian healthcare.</p>
             <div className="flex items-center gap-6 text-[12px] font-semibold text-[#404752]">
               <a href="#" className="hover:text-[#005ea4] transition-colors">Privacy Policy</a>
               <a href="#" className="hover:text-[#005ea4] transition-colors">Data Processing Agreement</a>

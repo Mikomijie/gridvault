@@ -1,0 +1,65 @@
+graph TD
+    Admission["Patient Inpatient Admission & Triage"] --> WardAssign{"Ward & Bed Allocation"}
+
+    subgraph WardRouting["1. Ward Isolation Routing"]
+        W1["Ward A (East Wing) - General Inpatient"]
+        W2["Ward B (West Wing) - Acute Surgical"]
+        W3["Ward C (South Wing) - Sub-Acute"]
+        W4["ICU - Intensive Care Unit"]
+        W5["Maternity & Neonatal Wing"]
+        W6["Emergency Trauma Department"]
+    end
+
+    WardAssign --> W1
+    WardAssign --> W2
+    WardAssign --> W3
+    WardAssign --> W4
+    WardAssign --> W5
+    WardAssign --> W6
+
+    subgraph ClinicalAccess["2. Role-Based Bedside Access (RBAC)"]
+        Doctor["Doctor: Full Clinical & MAR Access"]
+        Nurse["Nurse: Bedside Telemetry & Handover"]
+        Clerk["Records Clerk: Intake & Demographics"]
+        Admin["Admin: System Logs & Node Telemetry"]
+    end
+
+    W1 --> ClinicalAccess
+    W4 --> ClinicalAccess
+
+    subgraph BedsideTelemetry["3. Bedside Telemetry & Vitals Evaluation"]
+        Vitals["Record Vitals: HR, BP, SpO2, Temp"]
+        TriageCheck{"Evaluate Vital Parameters"}
+        StableState["Stable Status: Green Indicator"]
+        ObsState["Observation / Alert Status: Red Indicator"]
+    end
+
+    ClinicalAccess --> Vitals
+    Vitals --> TriageCheck
+    TriageCheck -->|"Within Normal Ranges"| StableState
+    TriageCheck -->|"BP >= 140/90 or SpO2 < 95%"| ObsState
+
+    subgraph EmergencyEscalation["4. Acute Emergency / Break-Glass"]
+        TraumaEvent["Acute Patient Decompensation"]
+        BreakGlass["Emergency Clinical Override Triggered"]
+        CMOAlert["Mandatory CMO Alert Dispatched"]
+        AuditLog["Cryptographic Audit Stamp (#GV-9042)"]
+        InstantAccess["Instant Clinical Chart Unlocked"]
+    end
+
+    ObsState --> TraumaEvent
+    TraumaEvent --> BreakGlass
+    BreakGlass --> CMOAlert
+    BreakGlass --> AuditLog
+    AuditLog --> InstantAccess
+
+    subgraph SovereignVault["5. In-Country Sovereign Replication"]
+        LocalCache["Edge Cache Terminal Buffer"]
+        LagosNode["Lagos Vault Node (Primary Cluster)"]
+        AbujaNode["Abuja FCT Dispatch (Disaster Recovery)"]
+    end
+
+    StableState --> LocalCache
+    InstantAccess --> LocalCache
+    LocalCache -->|TLS 1.3 Sync Stream| LagosNode
+    LagosNode -->|Redundant Sync| AbujaNode

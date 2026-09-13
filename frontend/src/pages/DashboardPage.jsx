@@ -400,7 +400,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="inline-flex items-center gap-1.5 text-[#006a62] px-3 py-1 rounded-full bg-[#81f3e5]/25 text-[12px] font-bold">
                   <span className="w-2 h-2 rounded-full bg-[#006a62] animate-pulse"></span>
-                  Online — Lagos Vault Node
+                  Online • Lagos Vault Node
                 </div>
               </div>
               <div className="flex items-center gap-2">

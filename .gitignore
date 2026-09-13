@@ -1,8 +1,32 @@
-node_modules/
-frontend/node_modules/
-dist/
-frontend/dist/
-.env
-frontend/.env
-.DS_Store
-*.log
+# Ignore everything by default
+/*
+
+# Whitelist documentation & diagrams
+!.gitignore
+!README.md
+!RELEASE-NOTES.md
+!/diagrams/
+!/diagrams/**
+
+# Whitelist root monorepo & project configuration files
+!package.json
+!package-lock.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+
+# Whitelist source directories
+!/backend/
+!/backend/**
+!/frontend/
+!/frontend/**
+
+# Re-ignore OS, build, dependencies, and environment artifacts within whitelisted directories
+**/.DS_Store
+**/*.log
+**/node_modules/
+**/dist/
+**/dist-ssr/
+**/.env
+**/.env.local
+**/.env.*.local
+!**/.env.example

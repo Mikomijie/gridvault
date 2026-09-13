@@ -362,7 +362,7 @@ export default function LoginPage() {
                     <label className="text-[14px] font-semibold text-[#131b2e]">
                       Select Clinical Role <span className="text-[#b6171e] text-sm">*</span>
                     </label>
-                    <span className="text-[12px] text-[#404752]">Ensures privilege principle compliance</span>
+                    <span className="text-[12px] text-[#404752]">Enforces principle of least privilege</span>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
                     {roles.map(role => (

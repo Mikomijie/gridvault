@@ -1,0 +1,20 @@
+graph TD
+    Trigger["Trauma Case / Unassigned Patient in Crisis"] --> ClickBtn["Clinician Clicks Emergency Clinical Override"]
+    ClickBtn --> AuthCheck{"Biometric / Clinical Credential Prompt"}
+
+    AuthCheck --> UnlockChart["Instant Decryption of Patient Dossier"]
+    AuthCheck --> CMOAlert["Synchronous High-Priority CMO Alert"]
+    AuthCheck --> GenAudit["Generate Cryptographic Audit Stamp"]
+
+    subgraph AuditPayload["Immutable Audit Record (#GV-9042)"]
+        A1["Staff ID: Dr. O. Adeyemi / RN Chioma"]
+        A2["Timestamp: UTC+1 West Africa Time"]
+        A3["Clinical Location: Ward 3 ICU / Ward A"]
+        A4["Clinical Justification: Acute Trauma Triage"]
+        A5["Cryptographic Signature & Terminal Session ID"]
+    end
+
+    GenAudit --> AuditPayload
+    AuditPayload --> Ledger["Commit to In-Country NDPR Audit Vault"]
+    UnlockChart --> ClinicalCare["Immediate Bedside Care Delivery"]
+    CMOAlert --> CMONotify["Chief Medical Officer Review & Sign-Off"]

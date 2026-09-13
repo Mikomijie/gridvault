@@ -1,0 +1,32 @@
+graph LR
+    subgraph BedsideTerminal["Bedside Clinical Terminal"]
+        UI_Input["Vitals & Nursing Notes Input"]
+        MAR_Admin["Medication Administration (MAR)"]
+        Override_Action["Emergency Override Trigger"]
+    end
+
+    subgraph EdgeEngine["Local Edge Engine (Offline-First)"]
+        Detector{"Network Health Detector"}
+        LocalDB["Local Storage / IndexedDB Cache (48 Charts)"]
+        SyncQueue["Cryptographic Sync Mutation Queue"]
+    end
+
+    subgraph NationalCloud["National Health Grid (Sovereign Infrastructure)"]
+        LagosVault["Lagos Vault Node (Victoria Island Hub)"]
+        AbujaVault["Abuja FCT Dispatch (Disaster Recovery Hub)"]
+        AuditLedger["Immutable NDPR Compliance Ledger"]
+    end
+
+    UI_Input --> LocalDB
+    MAR_Admin --> LocalDB
+    Override_Action --> LocalDB
+
+    LocalDB --> Detector
+    Detector -->|"Online: Low Latency (<0.4s)"| LagosVault
+    Detector -->|"Blackout / Network Failure"| SyncQueue
+
+    SyncQueue -->|"Queue Buffered Safely (Zero Data Loss)"| LocalDB
+    SyncQueue -.->|"Connection Restored: Batch Flush"| LagosVault
+
+    LagosVault -->|Real-Time Replication| AbujaVault
+    LagosVault -->|Audit Trail Append| AuditLedger
