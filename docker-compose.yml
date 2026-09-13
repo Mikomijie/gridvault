@@ -1,0 +1,55 @@
+services:
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - '8080:8080'
+    environment:
+      - NODE_ENV=development
+      - PORT=8080
+      - DATABASE_PATH=/data/gridvault.db
+      - GRIDVAULT_MASTER_KEY=k8s9J3nF9x0q1w2e3r4t5y6u7i8o9p0a1s2d3f4g5h6=
+      - JWT_SECRET=gridvault_insecure_development_jwt_secret_min_32_chars_long
+      - WITNESS_URL=http://witness:9090
+      - TIMEZONE=Africa/Lagos
+      - DEMO_MODE=true
+    volumes:
+      - gridvault-data:/data
+    depends_on:
+      - witness
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:8080/api/health/ping']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  witness:
+    build:
+      context: ./witness
+      dockerfile: Dockerfile
+    ports:
+      - '9090:9090'
+    environment:
+      - PORT=9090
+    volumes:
+      - witness-data:/data
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:9090/health']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - '8000:80'
+      - '8443:443'
+    depends_on:
+      - api
+
+volumes:
+  gridvault-data:
+  witness-data:

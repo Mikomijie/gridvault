@@ -1,0 +1,11 @@
+node_modules
+dist
+dist-ssr
+coverage
+data
+backups
+*.db
+*.db-wal
+*.db-shm
+.pnpm-store
+package-lock.json

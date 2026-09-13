@@ -1,23 +1,58 @@
 {
   "name": "gridvault",
-  "version": "1.0.0",
-  "description": "Clinical infrastructure for Nigerian healthcare facilities with offline resilience, RBAC, and emergency trauma override.",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Sovereign Clinical Records & Bedside Access Vault for Nigerian Healthcare Facilities",
+  "workspaces": [
+    "backend",
+    "frontend",
+    "witness"
+  ],
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
-    "dev": "npm --prefix frontend run dev",
-    "build": "npm --prefix frontend run build",
-    "preview": "npm --prefix frontend run preview",
-    "test": "echo \"Running GridVault clinical verification suite: 14/14 checks passing.\" && exit 0"
+    "dev": "npm run dev --workspace=backend & npm run dev --workspace=frontend",
+    "build": "npm run build --workspace=backend && npm run build --workspace=witness && npm run build --workspace=frontend",
+    "test": "vitest run",
+    "test:unit": "vitest run --dir backend/test/unit",
+    "test:integration": "vitest run --dir backend/test/integration",
+    "test:e2e": "playwright test",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "npm run typecheck --workspace=backend && npm run typecheck --workspace=witness",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "gv": "tsx backend/src/cli/gv.ts",
+    "demo:reset": "tsx backend/src/cli/gv.ts demo:reset",
+    "demo:tamper": "tsx backend/src/cli/gv.ts demo:tamper",
+    "judge": "tsx scripts/judge.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.20.0",
+    "@types/node": "^22.13.5",
+    "@vitest/coverage-v8": "^3.0.6",
+    "eslint": "^9.20.1",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-security": "^3.0.1",
+    "prettier": "^3.5.1",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.24.1",
+    "vitest": "^3.0.6"
   },
   "keywords": [
     "emr",
     "clinical-records",
     "offline-first",
     "rbac",
-    "ndpr",
+    "ndpa-2023",
     "nigeria-healthcare",
-    "telemetry",
-    "emergency-override"
+    "tamper-evident-ledger",
+    "emergency-break-glass"
   ],
-  "author": "GridVault Technologies",
+  "author": "GridVault Contributors",
   "license": "MIT"
 }

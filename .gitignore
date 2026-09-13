@@ -3,22 +3,39 @@
 
 # Whitelist documentation & diagrams
 !.gitignore
+!.nvmrc
+!.editorconfig
 !README.md
 !RELEASE-NOTES.md
+!PRD.md
+!AGENTS.md
+!/docs/
+!/docs/**
 !/diagrams/
 !/diagrams/**
+!/.github/
+!/.github/**
 
 # Whitelist root monorepo & project configuration files
 !package.json
 !package-lock.json
-!pnpm-lock.yaml
-!pnpm-workspace.yaml
+!.env.example
+!docker-compose.yml
+!eslint.config.js
+!.prettierrc
+!.prettierignore
+!tsconfig.json
+!vitest.config.ts
 
 # Whitelist source directories
 !/backend/
 !/backend/**
 !/frontend/
 !/frontend/**
+!/witness/
+!/witness/**
+!/scripts/
+!/scripts/**
 
 # Re-ignore OS, build, dependencies, and environment artifacts within whitelisted directories
 **/.DS_Store
@@ -26,6 +43,11 @@
 **/node_modules/
 **/dist/
 **/dist-ssr/
+**/coverage/
+**/data/
+**/*.db
+**/*.db-wal
+**/*.db-shm
 **/.env
 **/.env.local
 **/.env.*.local
