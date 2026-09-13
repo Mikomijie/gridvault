@@ -38,12 +38,18 @@ function simulateGet(requestUrl: string): Promise<{ status: number; body: unknow
 }
 
 describe('Witness Service Health and Status', () => {
-  it('GET /health returns 200 OK with service identifier', async () => {
+  it('GET /health returns 200 OK with service identifier and custody disclosure', async () => {
     const res = await simulateGet('/health');
     expect(res.status).toBe(200);
+    // The P2 witness discloses its custody and storage mode alongside the
+    // original liveness fields, so operators can see at a glance whether
+    // this instance is under real custody or development-only.
     expect(res.body).toEqual({
       status: 'ok',
-      service: 'gridvault-witness'
+      service: 'gridvault-witness',
+      custody: 'none-development-only',
+      storage: 'memory-only',
+      anchors: 0
     });
   });
 });

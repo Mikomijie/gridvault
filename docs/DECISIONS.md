@@ -41,3 +41,17 @@ This document records architectural, design, and operational decisions where AGE
   8. Full frontend integration is explicitly scoped for Phase 8.
   9. Docker production hardening and restore drill script execution are explicitly scoped for Phase 9.
   10. Out-of-scope for v2 per PRD §1.4: Billing, pharmacy inventory, lab instruments, radiology/PACS, NHIS claims, HL7/FHIR, native mobile apps, multi-tenant SaaS, biometric hardware, real SMS/email provider integration.
+
+---
+
+### 2026-09-13 — Phase 2: Tamper-Evident Ledger, Anchor Witness, and AT-301..AT-315
+
+- **Context:** AGENTS.md §7 P2 requires the append path, streaming verifier, Ed25519-anchored witness, JSONL export with standalone file verification, and the `demo:tamper` CLI, proven by acceptance tests AT-301..AT-315.
+- **Decision:**
+  1. Ledger entry hash is SHA-256 over a canonical-JSON array payload with the `gridvault.audit.v2` domain separator as element zero (replacing the v1 pipe-delimited format, which admitted delimiter-confusion forgeries); genesis `prev_hash` is 64 zeros.
+  2. `appendLedgerEntry` runs inside `BEGIN IMMEDIATE` (joining an ambient transaction when one exists), re-reading the chain head under the write lock so concurrent ward terminals serialize without forking; unknown actions and unserializable details fail closed via `LedgerError`.
+  3. `verifyLedger` is pure and streaming (O(1) memory) in three phases — structure (density + timestamp monotonicity, so reordered timestamps report `TIMESTAMP_REGRESSION` before hashes can mask them), chain (linkage then recomputation, first offending index wins), witness (newest independent receipt must still match the local entry, else `WITNESS_DIVERGED`).
+  4. Anchor receipts are signed Ed25519 (`ed25519:<base64>`) over a dedicated `gridvault.anchor.v1` canonical payload; delivery failure records `PENDING` and never blocks clinical writes; the file verifier derives witness views from exported anchor lines only, never from a database or the network.
+  5. `demoTamper` simulates a host attacker (drops the append-only triggers, rewrites one allowlisted cell via direct file access, reinstalls the triggers byte-identical) and refuses `NODE_ENV=production` without the explicit corruption-acknowledgement flag; there is no HTTP path to it.
+  6. Test inventory: AT-301/AT-302 in `backend/test/unit/ledger-hash.test.ts`; AT-303..AT-311 and AT-315 in `backend/test/integration/ledger.test.ts`; AT-312..AT-314 in `backend/test/integration/ledger-operational.test.ts` (real `gv` CLI child processes and the live witness child process over HTTP). Defensive branch pins live in `backend/test/unit/ledger-branches.test.ts` (no AT ids).
+  7. Gates at commit time: `npm test` 61/61 passing (11 files), `npm run lint` 0 errors (8 pre-existing `security/detect-non-literal-fs-filename` warnings on operator file paths), `npm run typecheck` clean (backend + witness), `npm run test:coverage` exit 0 (no NFR-10 gate wired yet; that lands in Phase 9).

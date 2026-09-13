@@ -29,6 +29,7 @@ export type AnchorStatus = 'PENDING' | 'ACKNOWLEDGED' | 'FAILED';
 
 export interface ChainAnchorRow {
   receipt_id: string;
+  facility_id: string;
   chain_head_index: number;
   chain_head_hash: string;
   entry_count: number;
@@ -85,11 +86,12 @@ export function chainAnchorsRepository(db: GridVaultDatabase) {
   return {
     insert(row: ChainAnchorRow): void {
       db.prepare(
-        'INSERT INTO chain_anchors (receipt_id, chain_head_index, chain_head_hash, entry_count, ' +
+        'INSERT INTO chain_anchors (receipt_id, facility_id, chain_head_index, chain_head_hash, entry_count, ' +
           'anchored_at, node_signature, witness_ack, witness_acked_at, status) ' +
-          'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+          'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
       ).run(
         row.receipt_id,
+        row.facility_id,
         row.chain_head_index,
         row.chain_head_hash,
         row.entry_count,
@@ -104,6 +106,19 @@ export function chainAnchorsRepository(db: GridVaultDatabase) {
       return db
         .prepare('SELECT * FROM chain_anchors WHERE status = ? ORDER BY chain_head_index ASC')
         .all(status) as ChainAnchorRow[];
+    },
+    /**
+     * The only mutation allowed on an anchor row: PENDING -> ACKNOWLEDGED
+     * (or FAILED on a rejected submission). The receipt fields themselves
+     * are never updated — a settled receipt is history, not state.
+     */
+    settle(
+      receiptId: string,
+      patch: { status: AnchorStatus; witness_ack: string | null; witness_acked_at: string | null }
+    ): void {
+      db.prepare(
+        'UPDATE chain_anchors SET status = ?, witness_ack = ?, witness_acked_at = ? WHERE receipt_id = ?'
+      ).run(patch.status, patch.witness_ack, patch.witness_acked_at, receiptId);
     },
     latest(): ChainAnchorRow | undefined {
       return db
