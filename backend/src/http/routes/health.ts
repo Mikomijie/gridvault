@@ -10,6 +10,7 @@
 import { Router } from 'express';
 import type { GridVaultDatabase } from '../../db/connection.js';
 import { pendingMigrations } from '../../db/migrate.js';
+import { renderMetrics } from '../../observability/metrics.js';
 import { AppError } from '../errors.js';
 
 export interface HealthRouterOptions {
@@ -83,7 +84,27 @@ export function createHealthRouter(options: HealthRouterOptions): Router {
 
   router.get('/metrics', (_req, res) => {
     res.setHeader('content-type', 'text/plain; version=0.0.4; charset=utf-8');
-    res.status(200).send('# HELP gridvault_up Whether the node is serving.\n# TYPE gridvault_up gauge\ngridvault_up 1\n');
+    let pendingOutbox = 0;
+    try {
+      const row = options.db
+        .prepare("SELECT COUNT(*) AS n FROM notification_outbox WHERE status = 'PENDING'")
+        .get() as { n: number };
+      pendingOutbox = row.n;
+    } catch {
+      pendingOutbox = 0;
+    }
+    let anchorLag: number | null = null;
+    try {
+      const row = options.db
+        .prepare('SELECT MAX(anchored_at) AS m FROM chain_anchors')
+        .get() as { m: string | null };
+      if (row.m !== null) {
+        anchorLag = Math.max(0, (Date.now() - Date.parse(row.m)) / 60000);
+      }
+    } catch {
+      anchorLag = null;
+    }
+    res.status(200).send(renderMetrics({ pendingOutbox, anchorLagMinutes: anchorLag }));
   });
 
   return router;

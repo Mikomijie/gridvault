@@ -23,7 +23,10 @@ import { FieldCrypto } from '../crypto/field-encryption.js';
 import { SqliteRecordSource } from '../records/source.js';
 import { RecordsService } from '../records/service.js';
 import { OverridePinThrottle, OverrideService, loadJustifications } from '../override/service.js';
+import { SyncService } from '../sync/service.js';
+import { createAbuseRouter } from './routes/abuse.js';
 import { createOverrideRouter } from './routes/override.js';
+import { createSyncRouter } from './routes/sync.js';
 import type { AnchorServiceConfig } from '../ledger/anchor.js';
 import { createAuditRouter } from './routes/audit.js';
 import { createAuthRouter } from './routes/auth.js';
@@ -32,6 +35,8 @@ import { createAdmissionsRouter, createHandoverRouter } from './routes/handover.
 import { createPatientsRouter } from './routes/patients.js';
 import { requireAuth } from './middleware/auth.js';
 import { securityHeaders } from './middleware/security.js';
+import { logger } from '../observability/logger.js';
+import { recordDenial, recordRequest } from '../observability/metrics.js';
 import { AppError, toErrorBody } from './errors.js';
 
 /** Test-only JWT secret. Production always passes an explicit secret. */
@@ -112,6 +117,7 @@ export function createApp(options: CreateAppOptions): express.Express {
     shiftGraceMinutes,
     overrides: overrideService
   });
+  const syncService = new SyncService({ db: options.db, clock: options.clock, timeZone: options.timeZone });
 
   const app = express();
   app.use(securityHeaders());
@@ -122,6 +128,16 @@ export function createApp(options: CreateAppOptions): express.Express {
     const requestId = randomUUID();
     res.setHeader('X-Request-Id', requestId);
     (req as { requestId?: string }).requestId = requestId;
+    const started = Date.now();
+    res.on('finish', () => {
+      const route = `${req.method} ${req.baseUrl}${req.path}`;
+      recordRequest(req.method, route, Date.now() - started);
+      if (res.statusCode === 403) {
+        // Reason-level attribution happens in services; the status-level
+        // counter keeps the dashboard honest even for non-policy 403s.
+        logger.info({ requestId, route, status: res.statusCode }, 'request denied');
+      }
+    });
     next();
   });
 
@@ -156,6 +172,18 @@ export function createApp(options: CreateAppOptions): express.Express {
   app.use('/api/handover', createHandoverRouter({ service: recordsService, authenticator }));
   app.use('/api/admissions', createAdmissionsRouter({ service: recordsService, authenticator }));
   app.use('/api/override', createOverrideRouter({ service: overrideService, authenticator }));
+  app.use(
+    '/api/abuse',
+    createAbuseRouter({
+      db: options.db,
+      clock: options.clock,
+      timeZone: options.timeZone,
+      authenticator,
+      service: recordsService,
+      demoMode: authConfig.demoMode ?? false
+    })
+  );
+  app.use('/api/sync', createSyncRouter({ service: syncService, authenticator }));
 
   app.use((_req, res) => {
     res.status(404).json({
@@ -174,9 +202,12 @@ export function createApp(options: CreateAppOptions): express.Express {
     const requestId =
       (req as { requestId?: string }).requestId ?? (res.getHeader('X-Request-Id') as string) ?? 'unknown';
     if (error instanceof AppError) {
+      if (error.httpStatus === 403 && error.reasonCode !== null) recordDenial(error.reasonCode);
+      if (error.code === 'GRANT_EXPIRED') recordDenial('GRANT_EXPIRED');
       res.status(error.httpStatus).json(toErrorBody(error, requestId));
       return;
     }
+    logger.error({ requestId, route: `${req.method} ${req.path}` }, 'unhandled error');
     res.status(500).json(
       toErrorBody(
         new AppError({ code: 'INTERNAL', httpStatus: 500, message: 'Internal server error' }),

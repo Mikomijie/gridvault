@@ -79,6 +79,49 @@ export function abuseAlertsRepository(db: GridVaultDatabase) {
       return db
         .prepare('SELECT * FROM abuse_alerts WHERE status = ? ORDER BY timestamp DESC')
         .all(status) as AbuseAlertRow[];
+    },
+    listFiltered(filters: { status?: AlertStatus; severity?: AlertSeverity; limit: number }): AbuseAlertRow[] {
+      return db
+        .prepare(
+          'SELECT * FROM abuse_alerts ' +
+            'WHERE (? IS NULL OR status = ?) AND (? IS NULL OR severity = ?) ' +
+            'ORDER BY timestamp DESC LIMIT ?'
+        )
+        .all(
+          filters.status ?? null,
+          filters.status ?? null,
+          filters.severity ?? null,
+          filters.severity ?? null,
+          filters.limit
+        ) as AbuseAlertRow[];
+    },
+    countByRuleSince(staffId: string, rule: string, sinceIso: string): number {
+      const row = db
+        .prepare('SELECT COUNT(*) AS n FROM abuse_alerts WHERE staff_id = ? AND rule_triggered = ? AND timestamp >= ?')
+        .get(staffId, rule, sinceIso) as { n: number };
+      return row.n;
+    },
+    latestByRule(staffId: string, rule: string): AbuseAlertRow | undefined {
+      return db
+        .prepare(
+          'SELECT * FROM abuse_alerts WHERE staff_id = ? AND rule_triggered = ? ORDER BY timestamp DESC LIMIT 1'
+        )
+        .get(staffId, rule) as AbuseAlertRow | undefined;
+    },
+    updateResolution(
+      id: string,
+      patch: {
+        status: AlertStatus;
+        resolution: AbuseAlertRow['resolution'];
+        resolved_by: string | null;
+        resolved_at: string | null;
+        resolution_notes: string | null;
+      }
+    ): void {
+      db.prepare(
+        'UPDATE abuse_alerts SET status = ?, resolution = ?, resolved_by = ?, resolved_at = ?, ' +
+          'resolution_notes = ? WHERE id = ?'
+      ).run(patch.status, patch.resolution, patch.resolved_by, patch.resolved_at, patch.resolution_notes, id);
     }
   };
 }

@@ -12,6 +12,8 @@ import { openDatabase } from './db/connection.js';
 import { migrate } from './db/migrate.js';
 import { createApp } from './http/app.js';
 import { loadConfig } from './config/env.js';
+import { loadAbuseRules } from './abuse/config.js';
+import { loadJustifications } from './override/service.js';
 import type { AnchorServiceConfig } from './ledger/anchor.js';
 import { parseNodeSigningKey } from './crypto/signing.js';
 
@@ -31,6 +33,25 @@ function loadConfigOrExit(): ReturnType<typeof loadConfig> {
 }
 
 const config = loadConfigOrExit();
+
+// Fail boot loudly on invalid rule/threshold configuration (AT-409, PRD 9.2):
+// the node never runs with a rule silently disabled.
+try {
+  loadAbuseRules();
+} catch (error) {
+  process.stderr.write(
+    `GridVault refuses to start: ${error instanceof Error ? error.message : String(error)}\n`
+  );
+  process.exit(1);
+}
+try {
+  loadJustifications();
+} catch (error) {
+  process.stderr.write(
+    `GridVault refuses to start: ${error instanceof Error ? error.message : String(error)}\n`
+  );
+  process.exit(1);
+}
 
 function anchorConfig(): AnchorServiceConfig | null {
   const rawKey = config.NODE_SIGNING_KEY.trim();

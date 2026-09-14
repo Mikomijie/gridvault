@@ -22,8 +22,11 @@ import {
   type AnchorServiceConfig
 } from '../../ledger/anchor.js';
 import { iterateExportLines } from '../../ledger/export.js';
+import { ledgerEntriesSince, ledgerHeadIndex, recentLedgerEntries } from '../../ledger/tail.js';
 import { AppError } from '../errors.js';
 import { requireAuth, type AuthedRequest } from '../middleware/auth.js';
+import { openSseStream, writeSseEvent } from '../sse.js';
+import { recordVerification } from '../../observability/metrics.js';
 import type { RecordsService } from '../../records/service.js';
 
 export interface AuditRouterOptions {
@@ -49,7 +52,9 @@ export function createAuditRouter(options: AuditRouterOptions): Router {
 
   // PRD 8.5 response, verbatim shape. Streams the ledger; safe on large chains.
   router.get('/verify', (_req, res) => {
-    res.json(verifyLedger(options.db));
+    const report = verifyLedger(options.db);
+    recordVerification(report.duration_ms, report.status);
+    res.json(report);
   });
 
   // Ledger inspection (PRD 12.5): admin/CMO read everything, doctors read
@@ -117,6 +122,56 @@ export function createAuditRouter(options: AuditRouterOptions): Router {
         }
         next(error);
       });
+  });
+
+  // Live ledger tail for the security console inspector (PRD 12.5).
+  // DB-backed short-poll every 500 ms: replay recent rows, then push newer
+  // ones. Requires the same ledger-read privilege as /logs.
+  router.get('/stream', (req, res, next) => {
+    if (options.service === undefined || options.authenticator === undefined) {
+      next(new AppError({ code: 'NOT_FOUND', httpStatus: 404, message: 'Unknown endpoint' }));
+      return;
+    }
+    options.authenticator(req, res, () => {
+      try {
+        const authed = req as unknown as AuthedRequest;
+        // Privilege check reuses the ledger-access decision via a logs call.
+        options.service?.ledgerLogs(authed.auth, { limit: 1 });
+      } catch (error) {
+        next(error);
+        return;
+      }
+      const isClosed = openSseStream(res);
+      let lastSeen = 0;
+      try {
+        const head = ledgerHeadIndex(options.db);
+        const recent = recentLedgerEntries(options.db, 20);
+        for (const row of [...recent].reverse()) {
+          writeSseEvent(res, 'ledger', row);
+          if (row.log_index > lastSeen) lastSeen = row.log_index;
+        }
+        if (lastSeen === 0 && head !== null) lastSeen = head;
+      } catch {
+        // Empty ledger: stream stays open, polling delivers the first row.
+      }
+      const timer = setInterval(() => {
+        if (isClosed()) {
+          clearInterval(timer);
+          return;
+        }
+        try {
+          const rows = ledgerEntriesSince(options.db, lastSeen, 50);
+          for (const row of rows) {
+            writeSseEvent(res, 'ledger', row);
+            if (row.log_index > lastSeen) lastSeen = row.log_index;
+          }
+        } catch {
+          // Next tick retries; the stream must survive transient DB locks.
+        }
+      }, 500);
+      timer.unref?.();
+      req.on('close', () => clearInterval(timer));
+    });
   });
 
   // Signed export for offline verification (PRD 8.7). Only JSONL exists.

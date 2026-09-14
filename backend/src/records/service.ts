@@ -33,6 +33,13 @@ import { emergencyOverridesRepository } from '../db/repositories/overrides.js';
 import { notificationOutboxRepository } from '../db/repositories/security.js';
 import { AppError } from '../http/errors.js';
 import { executeDecisionObligations } from '../abuse/engine.js';
+import {
+  detectBulkEnumeration,
+  detectSensitiveSweep,
+  enforceBulkThrottle,
+  enforceSensitiveSweepBlock
+} from '../abuse/engine.js';
+import type { AbuseRuleThresholds } from '../abuse/config.js';
 import { raiseAbuseAlert } from '../abuse/alerts.js';
 import {
   decide,
@@ -128,6 +135,7 @@ export interface RecordsServiceOptions {
   shiftGraceMinutes?: number;
   /** Present when break-glass is wired: expired grants answer 410, not 403. */
   overrides?: OverrideService;
+  abuseRules?: AbuseRuleThresholds;
 }
 
 export class RecordsService {
@@ -137,6 +145,7 @@ export class RecordsService {
   private readonly clock: Clock;
   private readonly timeZone: string;
   private readonly overrides: OverrideService | null;
+  private readonly abuseRules: AbuseRuleThresholds | undefined;
 
   constructor(options: RecordsServiceOptions) {
     this.db = options.db;
@@ -145,6 +154,11 @@ export class RecordsService {
     this.clock = options.clock ?? systemClock;
     this.timeZone = options.timeZone ?? 'Africa/Lagos';
     this.overrides = options.overrides ?? null;
+    this.abuseRules = options.abuseRules;
+  }
+
+  private engineOptions(): { clock: Clock; timeZone: string; thresholds?: AbuseRuleThresholds } {
+    return { clock: this.clock, timeZone: this.timeZone, thresholds: this.abuseRules };
   }
 
   private stamp(at: Date = this.clock.now()): string {
@@ -272,7 +286,7 @@ export class RecordsService {
           terminal_id: meta.terminal_id ?? null,
           source_ip: meta.source_ip ?? null
         },
-        { clock: this.clock, timeZone: this.timeZone }
+        this.engineOptions()
       );
     });
     write();
@@ -393,6 +407,15 @@ export class RecordsService {
     if (decision.effect === 'DENY') {
       this.deny(decision, auth, bundle, meta);
     }
+    // P6 rule engine: synchronous, before serialization, can block (PRD 9.1).
+    // Bulk throttle (RULE-ABUSE-06, 429) and sensitive-sweep block
+    // (RULE-ABUSE-07, 403) fire before a single clinical byte is serialized.
+    enforceBulkThrottle(this.db, auth.user.staff_id, this.engineOptions());
+    enforceSensitiveSweepBlock(
+      this.db,
+      { staff_id: auth.user.staff_id, under_grant: context.grant !== null },
+      this.engineOptions()
+    );
     const groups = decision.groups;
     const limitedDemo = subject.role === 'admin' || subject.role === 'cmo';
     const sensitiveAllowed = groups['SENSITIVE']?.allowed === true;
@@ -487,10 +510,41 @@ export class RecordsService {
           terminal_id: meta.terminal_id ?? null,
           source_ip: meta.source_ip ?? null
         },
-        { clock: this.clock, timeZone: this.timeZone }
+        this.engineOptions()
       );
     });
     write();
+    // Post-read detectors: bulk enumeration (RULE-ABUSE-06) and sensitive
+    // sweep (RULE-ABUSE-07). Fires once per window; grant-scoped reads never
+    // count toward the sweep.
+    detectBulkEnumeration(
+      this.db,
+      {
+        staff_id: auth.user.staff_id,
+        staff_role: auth.user.role,
+        ward: auth.user.assigned_ward,
+        patient_id: bundle.patient.id,
+        session_id: auth.sessionId,
+        terminal_id: meta.terminal_id ?? null,
+        source_ip: meta.source_ip ?? null
+      },
+      this.engineOptions()
+    );
+    detectSensitiveSweep(
+      this.db,
+      {
+        staff_id: auth.user.staff_id,
+        user_id: auth.user.id,
+        staff_role: auth.user.role,
+        ward: auth.user.assigned_ward,
+        patient_id: bundle.patient.id,
+        under_grant: context.grant !== null,
+        session_id: auth.sessionId,
+        terminal_id: meta.terminal_id ?? null,
+        source_ip: meta.source_ip ?? null
+      },
+      this.engineOptions()
+    );
     return dto;
   }
 

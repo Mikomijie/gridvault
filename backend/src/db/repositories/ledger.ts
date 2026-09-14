@@ -78,6 +78,22 @@ export function auditLogsRepository(db: GridVaultDatabase) {
     count(): number {
       const row = db.prepare('SELECT COUNT(*) AS n FROM audit_logs').get() as { n: number };
       return row.n;
+    },
+    maxIndex(): number | null {
+      const row = db.prepare('SELECT MAX(log_index) AS m FROM audit_logs').get() as {
+        m: number | null;
+      };
+      return row.m;
+    },
+    listRecent(limit: number): AuditLogRow[] {
+      return db
+        .prepare('SELECT * FROM audit_logs ORDER BY log_index DESC LIMIT ?')
+        .all(limit) as AuditLogRow[];
+    },
+    listSince(logIndex: number, limit: number): AuditLogRow[] {
+      return db
+        .prepare('SELECT * FROM audit_logs WHERE log_index > ? ORDER BY log_index ASC LIMIT ?')
+        .all(logIndex, limit) as AuditLogRow[];
     }
   };
 }

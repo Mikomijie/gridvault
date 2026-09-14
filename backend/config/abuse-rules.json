@@ -1,0 +1,16 @@
+{
+  "$schema": "gridvault-abuse-rules-v1",
+  "off_ward_escalation_count": 3,
+  "off_ward_escalation_window_minutes": 15,
+  "bulk_read_distinct_5min": 20,
+  "bulk_read_distinct_60min": 60,
+  "bulk_read_critical_multiplier": 2,
+  "bulk_throttle_per_second": 1,
+  "sensitive_sweep_distinct_patients": 5,
+  "sensitive_sweep_window_minutes": 10,
+  "sensitive_block_minutes": 15,
+  "login_failures_threshold": 5,
+  "login_failures_window_minutes": 10,
+  "break_glass_frequency_count": 2,
+  "break_glass_frequency_window_minutes": 60
+}

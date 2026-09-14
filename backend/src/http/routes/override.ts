@@ -8,6 +8,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { AppError } from '../errors.js';
+import { recordBreakGlass } from '../../observability/metrics.js';
 import { requireAuth, type AuthedRequest } from '../middleware/auth.js';
 import type { OverrideService } from '../../override/service.js';
 import type { RequestMeta } from '../../auth/service.js';
@@ -65,6 +66,7 @@ export function createOverrideRouter(options: OverrideRouterOptions): Router {
         metaOf(authed)
       )
       .then((result) => {
+        recordBreakGlass();
         res.status(201).json({ data: result });
       })
       .catch(next);
