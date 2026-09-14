@@ -266,6 +266,14 @@ export class SyncService {
       throw new AppError({ code: 'NOT_FOUND', httpStatus: 404, message: 'Patient not found' });
     }
     const capturedMs = parseCapturedAt(mutation.captured_at);
+    // Bedside timestamps are normalized to facility time on ingestion.
+    // Storing raw client strings mixes UTC (+00:00) with ward (+01:00)
+    // spellings, and ORDER BY recorded_at then misorders the chart: a
+    // synced reading can hide behind older seed rows lexicographically
+    // while being newer. Africa/Lagos has no DST, so the rendering is
+    // chronological for every stored row. The verbatim client value stays
+    // in the SYNC_REPLAY details for audit fidelity.
+    const bedsideIso = formatIsoWithOffset(new Date(capturedMs), this.timeZone);
     const skew = Math.abs(capturedMs - nowMs) > CLOCK_SKEW_THRESHOLD_MS;
     const base = {
       staff_id: auth.user.staff_id,
@@ -328,7 +336,7 @@ export class SyncService {
           respiratory_rate: vitals.respiratory_rate,
           pain_score: vitals.pain_score,
           recorded_by: auth.user.staff_id,
-          recorded_at: mutation.captured_at,
+          recorded_at: bedsideIso,
           ingested_at: nowIso,
           is_offline_sync: 1,
           source: isPaper ? 'paper_backfill' : 'offline_sync',
@@ -403,7 +411,7 @@ export class SyncService {
           author_staff_id: auth.user.staff_id,
           note_type: noteType,
           body: mutation.payload.body as string,
-          written_at: mutation.captured_at,
+          written_at: bedsideIso,
           ingested_at: nowIso,
           source: 'offline_sync',
           client_mutation_id: mutation.client_mutation_id

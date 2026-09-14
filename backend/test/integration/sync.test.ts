@@ -111,6 +111,42 @@ describe('offline sync (PRD 10.5)', () => {
     expect(warnings.some((w) => w.message.includes('42'))).toBe(true);
   });
 
+  it('synced bedside timestamps normalize to facility time so latest-vitals ordering survives mixed offsets', async () => {
+    const stack = await createSeededStack(MORNING_CLOCK);
+    makeOnDuty(stack, NURSE);
+    const auth = await loginAs(stack, NURSE);
+    // A UTC ('Z') spelling sorts before '+01:00' spellings of earlier
+    // instants lexicographically; normalized storage keeps the chart order
+    // chronological and the replayed reading becomes the latest.
+    const res = await request(stack.app)
+      .post('/api/sync/batch')
+      .set('Authorization', `Bearer ${auth}`)
+      .send({
+        mutations: [
+          {
+            client_mutation_id: `cm_${uuidv7().replace(/-/g, '')}`,
+            device_id: 'term-tz',
+            device_seq: 1,
+            type: 'VITALS',
+            patient_id: 'HOSP-LOS-2025-081',
+            payload: { heart_rate: 99, blood_pressure: '120/80', spo2: 98, temperature: 36.8 },
+            captured_at: '2026-09-13T12:00:00.000Z',
+            captured_at_source: 'device_clock'
+          }
+        ]
+      });
+    expect(res.status).toBe(200);
+    const row = stack.db
+      .prepare('SELECT recorded_at FROM vitals WHERE device_id = ?')
+      .get('term-tz') as { recorded_at: string };
+    expect(row.recorded_at).toMatch(/\+01:00$/);
+    expect(row.recorded_at).toContain('13:00');
+    const latest = stack.db
+      .prepare('SELECT heart_rate FROM vitals WHERE patient_id = (SELECT id FROM patients WHERE hospital_number = ?) ORDER BY recorded_at DESC LIMIT 1')
+      .get('HOSP-LOS-2025-081') as { heart_rate: number };
+    expect(latest.heart_rate).toBe(99);
+  });
+
   it('AT-507: captured_at 45 minutes in the past stores both timestamps with clock_skew_flag=1, ordered by device_seq', async () => {
     const stack = await createSeededStack(MORNING_CLOCK);
     makeOnDuty(stack, NURSE);

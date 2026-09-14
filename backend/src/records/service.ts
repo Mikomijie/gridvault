@@ -726,7 +726,20 @@ export class RecordsService {
       }
       this.denyField(decision, auth, bundle, meta, 'VITALS');
     }
-    const recordedAt = input.recorded_at ?? this.stamp();
+    // Same facility-time normalization as the sync path: mixed-offset
+    // spellings misorder ORDER BY recorded_at lexicographically.
+    let recordedAt = this.stamp();
+    if (input.recorded_at !== undefined && input.recorded_at !== null) {
+      const ms = Date.parse(input.recorded_at);
+      if (Number.isNaN(ms)) {
+        throw new AppError({
+          code: 'INVALID_BODY',
+          httpStatus: 400,
+          message: 'recorded_at is not a valid timestamp'
+        });
+      }
+      recordedAt = formatIsoWithOffset(new Date(ms), this.timeZone);
+    }
     const id = uuidv7();
     const status = deriveStatus(input);
     const base = this.auditBase(auth, bundle, meta);
