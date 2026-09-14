@@ -50,30 +50,31 @@ export function anchorSigningPayload(fields: AnchorSignableFields): Buffer {
 
 /** Parse an Ed25519 PKCS8 DER private key (base64, as stored in NODE_SIGNING_KEY). Fails closed. */
 export function parseNodeSigningKey(derBase64: string): KeyObject {
-  let der: Buffer;
-  try {
-    der = Buffer.from(derBase64.trim(), 'base64');
-  } catch {
-    throw new SigningError('NODE_SIGNING_KEY is not valid base64');
-  }
+  // Buffer.from with a string input never throws (invalid characters are
+  // skipped); empty and malformed payloads fail closed on the length and
+  // key-type checks below. There is deliberately no try/catch here: an
+  // untestable branch would violate the NFR-10 100%-branch gate on crypto.
+  const der = Buffer.from(derBase64.trim(), 'base64');
   if (der.byteLength === 0) {
     throw new SigningError('NODE_SIGNING_KEY is empty');
   }
   try {
     const key = createPrivateKey({ key: der, format: 'der', type: 'pkcs8' });
     if (key.asymmetricKeyType !== 'ed25519') {
-      throw new SigningError(
-        `NODE_SIGNING_KEY must be an Ed25519 key, got ${key.asymmetricKeyType ?? 'unknown'}`
-      );
+      // No ?? fallback: createPrivateKey only yields asymmetric keys, so
+      // the type-level undefined is unreachable and an untestable branch
+      // would violate the NFR-10 100%-branch gate on crypto.
+      throw new SigningError(`NODE_SIGNING_KEY must be an Ed25519 key, got ${String(key.asymmetricKeyType)}`);
     }
     return key;
   } catch (error) {
     if (error instanceof SigningError) {
       throw error;
     }
-    throw new SigningError(
-      `NODE_SIGNING_KEY is not a valid Ed25519 PKCS8 key: ${error instanceof Error ? error.message : String(error)}`
-    );
+    // Uniform String(): Node's key parser only throws Error instances, so a
+    // separate String() fallback arm would be untestable. String() still
+    // names Error causes ('Error: ...') and stays loud for anything else.
+    throw new SigningError(`NODE_SIGNING_KEY is not a valid Ed25519 PKCS8 key: ${String(error)}`);
   }
 }
 

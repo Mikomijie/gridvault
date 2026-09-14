@@ -187,7 +187,7 @@ export function makeWitnessDeliver(config: AnchorServiceConfig): AnchorDeliver {
       });
     } catch (error) {
       throw new AnchorError(
-        `Witness unreachable at ${config.witnessUrl}: ${error instanceof Error ? error.message : String(error)}`
+        `Witness unreachable at ${config.witnessUrl}: ${String(error)}`
       );
     }
     if (!response.ok) {
@@ -227,7 +227,7 @@ export async function fetchWitnessReceipts(config: WitnessFetchConfig): Promise<
     });
   } catch (error) {
     throw new AnchorError(
-      `Witness unreachable at ${config.witnessUrl}: ${error instanceof Error ? error.message : String(error)}`
+      `Witness unreachable at ${config.witnessUrl}: ${String(error)}`
     );
   }
   if (!response.ok) {

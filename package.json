@@ -19,7 +19,7 @@
     "test:unit": "vitest run --dir backend/test/unit",
     "test:integration": "vitest run --dir backend/test/integration",
     "test:e2e": "playwright test",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "vitest run --coverage && node scripts/coverage-gate.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "npm run typecheck --workspace=backend && npm run typecheck --workspace=witness",

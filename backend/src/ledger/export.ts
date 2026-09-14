@@ -95,10 +95,13 @@ export function exportLedger(db: GridVaultDatabase, outPath: string): ExportCoun
   try {
     for (const line of iterateExportLines(db)) {
       bytes += writeSync(fd, line, null, 'utf8');
-      const parsed = JSON.parse(line) as { record?: string; current_hash?: string };
+      // The line was serialized two statements up by iterateExportLines, so
+      // an audit record always carries current_hash; there is deliberately
+      // no fallback here (an untestable branch would violate NFR-10).
+      const parsed = JSON.parse(line) as { record: string; current_hash: string };
       if (parsed.record === EXPORT_RECORD_AUDIT) {
         entries += 1;
-        headHash = parsed.current_hash ?? headHash;
+        headHash = parsed.current_hash;
       } else {
         anchors += 1;
       }
