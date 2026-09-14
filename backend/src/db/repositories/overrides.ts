@@ -71,6 +71,13 @@ export function emergencyOverridesRepository(db: GridVaultDatabase) {
           "SELECT * FROM emergency_overrides WHERE staff_id = ? AND patient_id = ? AND state = 'ACTIVE' AND expires_at > ?"
         )
         .all(staffId, patientId, at) as EmergencyOverrideRow[];
-    }
+    },
+    listActiveForStaff(staffId: string): EmergencyOverrideRow[] {
+      return db
+        .prepare(
+          "SELECT * FROM emergency_overrides WHERE staff_id = ? AND state = 'ACTIVE' ORDER BY granted_at DESC"
+        )
+        .all(staffId) as EmergencyOverrideRow[];
+    },
   };
 }

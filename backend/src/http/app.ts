@@ -6,25 +6,83 @@
 // Exactly one error middleware terminates the chain: AppErrors serialize to
 // the PRD 12.1 error shape, and anything else becomes a generic 500 that
 // leaks neither internals nor PHI.
+//
+// Auth is enforced at the middleware layer with a server-side user reload
+// per request; the JWT carries identity claims only. Optional `auth`
+// overrides exist for tests — production (index.ts) always passes explicit
+// configuration.
 
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import { randomUUID } from 'node:crypto';
 import type { GridVaultDatabase } from '../db/connection.js';
 import type { Clock } from '../clock.js';
+import { AuthService } from '../auth/service.js';
+import { IpRateLimiter } from '../auth/rate-limit.js';
 import type { AnchorServiceConfig } from '../ledger/anchor.js';
 import { createAuditRouter } from './routes/audit.js';
+import { createAuthRouter } from './routes/auth.js';
+import { createHealthRouter } from './routes/health.js';
+import { requireAuth } from './middleware/auth.js';
+import { securityHeaders } from './middleware/security.js';
 import { AppError, toErrorBody } from './errors.js';
+
+/** Test-only JWT secret. Production always passes an explicit secret. */
+export const TEST_ONLY_JWT_SECRET = 'gridvault-test-only-jwt-secret-minimum-32-chars!!';
+
+export interface AuthAppConfig {
+  jwtSecret?: string;
+  accessTokenTtlMinutes?: number;
+  refreshTokenTtlHours?: number;
+  maxLoginAttempts?: number;
+  lockoutMinutes?: number;
+  shiftGraceMinutes?: number;
+  demoMode?: boolean;
+  masterKeyLoaded?: boolean;
+  migrationsDir?: string | null;
+}
 
 export interface CreateAppOptions {
   db: GridVaultDatabase;
   clock?: Clock;
   timeZone?: string;
   anchorConfig?: AnchorServiceConfig | null;
+  auth?: AuthAppConfig;
 }
 
 export function createApp(options: CreateAppOptions): express.Express {
+  const authConfig = options.auth ?? {};
+  const jwtSecret = authConfig.jwtSecret ?? TEST_ONLY_JWT_SECRET;
+  const shiftGraceMinutes = authConfig.shiftGraceMinutes ?? 30;
+
+  const authService = new AuthService({
+    db: options.db,
+    clock: options.clock,
+    timeZone: options.timeZone,
+    jwtSecret,
+    accessTokenTtlMinutes: authConfig.accessTokenTtlMinutes,
+    refreshTokenTtlHours: authConfig.refreshTokenTtlHours,
+    maxLoginAttempts: authConfig.maxLoginAttempts,
+    lockoutMinutes: authConfig.lockoutMinutes,
+    shiftGraceMinutes,
+    ipLimiter: new IpRateLimiter({
+      maxAttempts: authConfig.maxLoginAttempts ?? 5,
+      windowMs: 10 * 60 * 1000,
+      lockoutMs: (authConfig.lockoutMinutes ?? 15) * 60000
+    })
+  });
+  const authenticator = requireAuth({
+    db: options.db,
+    jwtSecret,
+    clock: options.clock,
+    timeZone: options.timeZone,
+    shiftGraceMinutes
+  });
+
   const app = express();
+  app.use(securityHeaders());
   app.use(express.json());
+  app.use(cookieParser());
 
   app.use((req, res, next) => {
     const requestId = randomUUID();
@@ -33,10 +91,20 @@ export function createApp(options: CreateAppOptions): express.Express {
     next();
   });
 
-  // Unauthenticated liveness, no body. The heartbeat polls this.
-  app.get('/api/health/ping', (_req, res) => {
-    res.status(200).end();
-  });
+  app.use('/api/health', createHealthRouter({
+    db: options.db,
+    migrationsDir: authConfig.migrationsDir ?? null,
+    masterKeyLoaded: authConfig.masterKeyLoaded ?? true
+  }));
+
+  app.use(
+    '/api/auth',
+    createAuthRouter({
+      service: authService,
+      authenticator,
+      demoMode: authConfig.demoMode ?? false
+    })
+  );
 
   app.use(
     '/api/audit',

@@ -93,6 +93,18 @@ function readAppliedMigrations(db: GridVaultDatabase): MigrationRecord[] {
 }
 
 /**
+ * List migration versions with files on disk but no checksum record —
+ * without applying anything. Used by /api/health/ready so readiness can
+ * fail closed on pending migrations instead of applying them as a side
+ * effect of a health check.
+ */
+export function pendingMigrations(db: GridVaultDatabase, migrationsDir: string): number[] {
+  const files = listMigrationFiles(migrationsDir);
+  const applied = new Set(readAppliedMigrations(db).map((record) => record.version));
+  return files.filter((file) => !applied.has(file.version)).map((file) => file.version);
+}
+
+/**
  * Apply pending migrations, forward-only, each inside its own transaction
  * together with its checksum record.
  *

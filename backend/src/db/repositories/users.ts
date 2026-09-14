@@ -80,6 +80,16 @@ export function usersRepository(db: GridVaultDatabase) {
     findById(id: string): UserRow | undefined {
       return db.prepare('SELECT * FROM users WHERE id = ?').get(id) as UserRow | undefined;
     },
+    recordFailedAttempt(staffId: string, failedAttempts: number, lockedUntil: string | null, at: string): void {
+      db.prepare(
+        'UPDATE users SET failed_attempts = ?, locked_until = ?, updated_at = ? WHERE staff_id = ?'
+      ).run(failedAttempts, lockedUntil, at, staffId);
+    },
+    resetLoginState(staffId: string, at: string): void {
+      db.prepare(
+        'UPDATE users SET failed_attempts = 0, locked_until = NULL, updated_at = ? WHERE staff_id = ?'
+      ).run(at, staffId);
+    },
     count(): number {
       const row = db.prepare('SELECT COUNT(*) AS n FROM users').get() as { n: number };
       return row.n;
@@ -119,6 +129,24 @@ export function sessionsRepository(db: GridVaultDatabase) {
     },
     listByFamily(familyId: string): SessionRow[] {
       return db.prepare('SELECT * FROM sessions WHERE family_id = ?').all(familyId) as SessionRow[];
+    },
+    findByRefreshHash(refreshHash: string): SessionRow | undefined {
+      return db.prepare('SELECT * FROM sessions WHERE refresh_hash = ?').get(refreshHash) as
+        | SessionRow
+        | undefined;
+    },
+    revokeSession(id: string, reason: string, at: string): void {
+      db.prepare(
+        'UPDATE sessions SET revoked_at = ?, revoked_reason = ? WHERE id = ? AND revoked_at IS NULL'
+      ).run(at, reason, id);
+    },
+    revokeFamily(familyId: string, reason: string, at: string): number {
+      const result = db
+        .prepare(
+          'UPDATE sessions SET revoked_at = ?, revoked_reason = ? WHERE family_id = ? AND revoked_at IS NULL'
+        )
+        .run(at, reason, familyId);
+      return Number(result.changes);
     }
   };
 }
