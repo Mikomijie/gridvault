@@ -27,6 +27,7 @@
 !.prettierignore
 !tsconfig.json
 !vitest.config.ts
+!playwright.config.ts
 
 # Whitelist source directories
 !/backend/

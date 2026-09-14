@@ -7,8 +7,10 @@ export default defineConfig({
     include: [
       'backend/test/**/*.{test,spec}.ts',
       'witness/test/**/*.{test,spec}.ts',
+      'frontend/test/**/*.{test,spec}.jsx',
       'test/**/*.{test,spec}.ts'
     ],
+    environmentMatchGlobs: [['frontend/test/**', 'jsdom']],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json'],

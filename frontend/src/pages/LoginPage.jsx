@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext.jsx';
+import en from '../i18n/en.json';
 
 const Icons = {
   verifiedUser: (
@@ -225,18 +228,16 @@ const Icons = {
 };
 
 export default function LoginPage() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [selectedRole, setSelectedRole] = useState('doctor');
-  const [selectedWard, setSelectedWard] = useState('ward_a');
-  const [selectedShift, setSelectedShift] = useState('morning');
   const [isLoading, setIsLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success');
   const [currentTime, setCurrentTime] = useState('');
   const [formData, setFormData] = useState({
     staffId: '',
-    password: '',
-    rememberMe: false
+    password: ''
   });
 
   useEffect(() => {
@@ -252,37 +253,35 @@ export default function LoginPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const roles = [
-    { id: 'doctor', label: 'Doctor', icon: Icons.stethoscope, sub: 'Full clinical access' },
-    { id: 'nurse', label: 'Nurse', icon: Icons.medicalServices, sub: 'Ward patient access' },
-    { id: 'clerk', label: 'Records Clerk', icon: Icons.folderShared, sub: 'Assigned records only' },
-    { id: 'admin', label: 'Admin', icon: Icons.manageAccounts, sub: 'System administration' }
-  ];
-
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: value
     }));
   };
 
-  const handleLogin = (e) => {
+  // Real authentication (P8): staff ID plus password only. Role, ward and
+  // shift come back from the server-side staff record — the client never
+  // chooses its own authorization context. A failed login shows an inline
+  // error with no navigation and stores no token anywhere (AT-603).
+  const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setToastType('success');
-    setToastMessage(`Synchronizing credentials for ${formData.staffId} with Lagos Vault Node...`);
-    setTimeout(() => {
+    setToastMessage('');
+    try {
+      await login(formData.staffId.trim(), formData.password);
+      navigate('/dashboard', { replace: true });
+    } catch (err) {
+      setToastType('danger');
+      if (err.code === 'ACCOUNT_LOCKED') {
+        setToastMessage(en.login.locked);
+      } else {
+        setToastMessage(en.login.errorGeneric);
+      }
+    } finally {
       setIsLoading(false);
-      setToastMessage('Success. Routing to Ward Patient Telemetry Board...');
-    }, 1200);
-  };
-
-  const handleEmergencyOverride = () => {
-    setToastType('danger');
-    setToastMessage(
-      'TRAUMA OVERRIDE: CMO alert dispatched. Enter biometric key or emergency badge scan.'
-    );
+    }
   };
 
   return (
@@ -335,11 +334,11 @@ export default function LoginPage() {
                 <div className="flex flex-wrap gap-2 mt-1">
                   <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#eaedff] text-[#131b2e] text-[11px] font-bold tracking-[0.05em]">
                     <span className="text-[#005ea4]">{Icons.verifiedUser}</span>
-                    NDPR Compliant
+                    NDPA 2023 aligned
                   </div>
                   <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#eaedff] text-[#131b2e] text-[11px] font-bold tracking-[0.05em]">
                     <span className="text-[#006a62]">{Icons.lockClock}</span>
-                    ISO 27001 Vault
+                    No certification claimed
                   </div>
                   <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#81f3e5]/60 text-[#006f66] text-[11px] font-bold tracking-[0.05em]">
                     <span className="text-[#006a62]">{Icons.dns}</span>
@@ -423,7 +422,7 @@ export default function LoginPage() {
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-1">
                   <h1 className="text-[24px] font-semibold tracking-tight text-[#131b2e]">
-                    Hospital Portal Login
+                    {en.login.title}
                   </h1>
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#eaedff] text-[#005ea4] text-[11px] font-bold">
                     {Icons.key}
@@ -431,7 +430,7 @@ export default function LoginPage() {
                   </span>
                 </div>
                 <p className="text-[14px] text-[#404752]">
-                  Sign in to access assigned ward charts and patient telemetry.
+                  {en.login.subtitle}
                 </p>
               </div>
 
@@ -441,7 +440,7 @@ export default function LoginPage() {
                   {/* Staff ID */}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[12px] font-bold tracking-[0.02em] text-[#131b2e] flex items-center gap-1">
-                      Hospital Email or Staff ID
+                      {en.login.staffIdLabel}
                       <span className="text-[#b6171e]">*</span>
                     </label>
                     <div className="relative flex items-center">
@@ -453,7 +452,7 @@ export default function LoginPage() {
                         name="staffId"
                         value={formData.staffId}
                         onChange={handleInputChange}
-                        placeholder="staff@hospital.ng"
+                        placeholder={en.login.staffIdPlaceholder}
                         required
                         className="w-full h-10 pl-9 pr-3 rounded-lg bg-[#f2f3ff] text-[#131b2e] text-[14px] placeholder:text-[#707783] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#005ea4] shadow-sm transition-all"
                       />
@@ -464,7 +463,7 @@ export default function LoginPage() {
                   <div className="flex flex-col gap-1.5">
                     <div className="flex justify-between items-center">
                       <label className="text-[12px] font-bold tracking-[0.02em] text-[#131b2e] flex items-center gap-1">
-                        Password <span className="text-[#b6171e]">*</span>
+                        {en.login.passwordLabel} <span className="text-[#b6171e]">*</span>
                       </label>
                       <button
                         type="button"
@@ -484,7 +483,7 @@ export default function LoginPage() {
                         name="password"
                         value={formData.password}
                         onChange={handleInputChange}
-                        placeholder="Enter your password"
+                        placeholder={en.login.passwordLabel}
                         required
                         className="w-full h-10 pl-9 pr-10 rounded-lg bg-[#f2f3ff] text-[#131b2e] text-[14px] placeholder:text-[#707783] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#005ea4] shadow-sm transition-all"
                       />
@@ -493,106 +492,7 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                {/* Remember & Forgot */}
-                <div className="flex items-center justify-between pt-1">
-                  <label className="flex items-center gap-2 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      name="rememberMe"
-                      checked={formData.rememberMe}
-                      onChange={handleInputChange}
-                      className="w-4 h-4 rounded text-[#005ea4] focus:ring-[#005ea4] border-[#c0c7d4] cursor-pointer"
-                    />
-                    <span className="text-[12px] text-[#404752]">
-                      Remember credentials on this clinical terminal
-                    </span>
-                  </label>
-                  <button
-                    type="button"
-                    className="text-[#005ea4] text-[11px] font-bold focus:outline-none"
-                  >
-                    Forgot password?
-                  </button>
-                </div>
-
-                {/* Role Selection */}
-                <div className="pt-2">
-                  <div className="flex items-center justify-between mb-3">
-                    <label className="text-[14px] font-semibold text-[#131b2e]">
-                      Select Clinical Role <span className="text-[#b6171e] text-sm">*</span>
-                    </label>
-                    <span className="text-[12px] text-[#404752]">
-                      Enforces principle of least privilege
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-                    {roles.map((role) => (
-                      <button
-                        key={role.id}
-                        type="button"
-                        onClick={() => setSelectedRole(role.id)}
-                        className={`p-2.5 rounded-lg transition-all flex flex-col justify-between cursor-pointer ${
-                          selectedRole === role.id
-                            ? 'ring-2 ring-[#005ea4] bg-[#eaedff]'
-                            : 'bg-[#f2f3ff] hover:bg-[#eaedff] ring-1 ring-[#c0c7d4]'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-1.5">
-                          <div className="p-1.5 rounded-md bg-[#d3e4ff] text-[#001c38]">
-                            {role.icon}
-                          </div>
-                          <input
-                            type="radio"
-                            name="clinical_role"
-                            value={role.id}
-                            checked={selectedRole === role.id}
-                            readOnly
-                            className="accent-[#005ea4] pointer-events-none"
-                          />
-                        </div>
-                        <p className="text-[12px] font-bold text-[#131b2e] text-left">
-                          {role.label}
-                        </p>
-                        <p className="text-[11px] text-[#404752] text-left mt-0.5">{role.sub}</p>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Ward & Shift */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[12px] font-bold tracking-[0.02em] text-[#131b2e]">
-                      Ward Assignment <span className="text-[#b6171e]">*</span>
-                    </label>
-                    <select
-                      value={selectedWard}
-                      onChange={(e) => setSelectedWard(e.target.value)}
-                      className="h-10 px-3 rounded-lg bg-[#f2f3ff] text-[#131b2e] text-[14px] border border-[#c0c7d4] focus:outline-none focus:ring-2 focus:ring-[#005ea4] transition-all"
-                    >
-                      <option value="ward_a">Ward A (East Wing)</option>
-                      <option value="ward_b">Ward B (West Wing)</option>
-                      <option value="ward_c">Ward C (South Wing)</option>
-                      <option value="icu">ICU</option>
-                      <option value="maternity">Maternity</option>
-                      <option value="emergency">Emergency</option>
-                    </select>
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[12px] font-bold tracking-[0.02em] text-[#131b2e]">
-                      Shift Assignment <span className="text-[#b6171e]">*</span>
-                    </label>
-                    <select
-                      value={selectedShift}
-                      onChange={(e) => setSelectedShift(e.target.value)}
-                      className="h-10 px-3 rounded-lg bg-[#f2f3ff] text-[#131b2e] text-[14px] border border-[#c0c7d4] focus:outline-none focus:ring-2 focus:ring-[#005ea4] transition-all"
-                    >
-                      <option value="morning">Morning (6:00 AM - 2:00 PM)</option>
-                      <option value="afternoon">Afternoon (2:00 PM - 10:00 PM)</option>
-                      <option value="night">Night (10:00 PM - 6:00 AM)</option>
-                    </select>
-                  </div>
-                </div>
+                <p className="text-[12px] text-[#404752] pt-1">{en.login.subtitle}</p>
 
                 {/* Submit */}
                 <button
@@ -601,32 +501,16 @@ export default function LoginPage() {
                   className="w-full bg-[#005ea4] hover:bg-[#0077ce] disabled:opacity-70 text-white text-[14px] font-semibold py-3 rounded-lg shadow-md transition-all flex items-center justify-center gap-2 mt-2"
                 >
                   {isLoading ? (
-                    <>{Icons.spinner} Authenticating Terminal...</>
+                    <>{Icons.spinner} {en.login.submitting}</>
                   ) : (
-                    <>Secure Login to GridVault {Icons.login}</>
+                    <>{en.login.submit} {Icons.login}</>
                   )}
                 </button>
 
                 <p className="text-[11px] font-bold text-[#707783] text-center pt-2">
-                  This access is logged and cryptographically signed. Unauthorized access attempts
-                  are automatically flagged.
+                  {en.login.note}
                 </p>
 
-                {/* Emergency Override */}
-                <div className="pt-3 border-t border-[#c0c7d4]/40">
-                  <button
-                    type="button"
-                    onClick={handleEmergencyOverride}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 border-[#b6171e]/40 bg-[#ffdad6]/30 hover:bg-[#ffdad6]/60 text-[#b6171e] text-[12px] font-bold transition-all"
-                  >
-                    {Icons.emergency}
-                    Emergency Clinical Override - Ward Crisis Access
-                  </button>
-                  <p className="text-[11px] text-[#707783] text-center mt-2">
-                    Trauma override generates a mandatory CMO alert and creates an immutable audit
-                    record.
-                  </p>
-                </div>
               </form>
             </div>
           </div>
@@ -639,10 +523,10 @@ export default function LoginPage() {
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-[#006a62]"></span>
-              Federal Ministry of Health Certified
+              Access control aligned to docs/COMPLIANCE.md (NDPA 2023)
             </span>
             <span className="text-[#c0c7d4]">•</span>
-            <span>NDPR Registered Data Controller: GridVault NG Ltd</span>
+            <span>No certification claimed — see the compliance matrix</span>
           </div>
           <div className="flex items-center gap-4">
             <a href="#" className="hover:text-[#005ea4] transition-colors">

@@ -137,8 +137,7 @@ export default function LandingPage() {
             <div className="flex items-center gap-2 text-[#006a62]">
               {Icons.verifiedUser}
               <span className="text-[#404752] tracking-wide">
-                NDPR (Nigeria Data Protection Regulation) Compliant & ISO 27001 Certified
-                Infrastructure for Healthcare Facilities
+                Access controls aligned to docs/COMPLIANCE.md (NDPA 2023) for Healthcare Facilities
               </span>
             </div>
             <div className="hidden md:flex items-center gap-6 text-[#404752]">
@@ -317,7 +316,7 @@ export default function LandingPage() {
                   <span className="hidden sm:block text-[#c0c7d4]">•</span>
                   <div className="flex items-center gap-1.5 text-[#404752] text-[11px] font-bold tracking-[0.05em]">
                     <span className="text-[#006a62]">{Icons.verified}</span>
-                    NDPR Class-1 Audited
+                    Tamper-evident audit log
                   </div>
                 </div>
               </div>
@@ -400,7 +399,7 @@ export default function LandingPage() {
                   100%
                 </span>
                 <span className="text-[12px] font-semibold text-[#131b2e] mt-1">
-                  NDPR & Medical Council Compliant
+                  Designed for NDPA 2023 duties
                 </span>
                 <span className="text-[12px] text-[#404752]">In-country cryptographic vault</span>
               </div>
@@ -494,8 +493,8 @@ export default function LandingPage() {
               Ready to Secure Your Hospital's Patient Records?
             </h2>
             <p className="text-[16px] text-white/80 mb-10 max-w-2xl mx-auto leading-relaxed">
-              GridVault is trusted by 45+ hospitals and diagnostic centers across Nigeria. NDPR
-              compliant. ISO 27001 certified infrastructure.
+              GridVault enforces least-privilege chart access with a tamper-evident audit log.
+              No certification is claimed; deployment duties are listed in docs/COMPLIANCE.md.
             </p>
             <a
               href="/login"
@@ -506,17 +505,17 @@ export default function LandingPage() {
             <div className="flex items-center justify-center gap-6 mt-8 text-white/70 text-[12px] font-bold tracking-[0.05em] flex-wrap">
               <span className="flex items-center gap-1">
                 <span className="text-white/70">{Icons.verifiedUser}</span>
-                NDPR Compliant
+                No certification claimed
               </span>
               <span className="text-white/30">•</span>
               <span className="flex items-center gap-1">
                 <span className="text-white/70">{Icons.lock}</span>
-                ISO 27001
+                AES-256-GCM field encryption
               </span>
               <span className="text-white/30">•</span>
               <span className="flex items-center gap-1">
                 <span className="text-white/70">{Icons.hub}</span>
-                FMOH Standard Interoperability
+                Witness-anchored audit log
               </span>
             </div>
           </div>
@@ -540,7 +539,7 @@ export default function LandingPage() {
               </p>
               <div className="flex items-center gap-1 text-[11px] font-bold text-[#006a62]">
                 <span className="text-[#006a62]">{Icons.lock}</span>
-                NDPR Validated Platform
+                Witnessed audit ledger
               </div>
             </div>
 
@@ -608,12 +607,12 @@ export default function LandingPage() {
                 </li>
                 <li>
                   <a href="#" className="hover:text-[#005ea4] transition-colors">
-                    FMOH Guidelines Sync
+                    Downtime protocol
                   </a>
                 </li>
                 <li>
                   <a href="#" className="hover:text-[#005ea4] transition-colors">
-                    ISO 27001 Security
+                    Compliance matrix
                   </a>
                 </li>
                 <li>

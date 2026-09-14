@@ -1,0 +1,63 @@
+{
+  "app": {
+    "name": "GridVault",
+    "tagline": "Sovereign clinical records and bedside access control for Nigerian hospitals"
+  },
+  "landing": {
+    "heroTitle": "Ward records with least-privilege access",
+    "heroBody": "GridVault enforces role, ward and duty checks on every chart open, redacts high-stigma fields at the server boundary, and keeps a tamper-evident, externally witnessed audit log of every access.",
+    "controlsTitle": "What the software enforces",
+    "controls": [
+      "Deny-by-default access decisions on role, ward and active duty",
+      "Field-level redaction of sensitive clinical data with a stated reason",
+      "Emergency override that is instant, scoped to one patient, and impossible to hide",
+      "Append-only audit ledger with external witness anchoring",
+      "Real-time abuse detection that blocks insider misuse",
+      "Offline-first ward terminals with deterministic sync and a paper downtime protocol"
+    ],
+    "complianceNote": "GridVault implements the technical controls listed in docs/COMPLIANCE.md under the Nigeria Data Protection Act 2023. It holds no certification or accreditation; deployment duties such as DPIA, staff training and physical security belong to the facility.",
+    "ctaLogin": "Staff login",
+    "ctaDocs": "Read the compliance matrix"
+  },
+  "login": {
+    "title": "Staff login",
+    "subtitle": "Use your staff ID and password. Your role, ward and shift come from your staff record — nothing is chosen here.",
+    "staffIdLabel": "Staff ID",
+    "staffIdPlaceholder": "e.g. SN-7742",
+    "passwordLabel": "Password",
+    "submit": "Secure login to GridVault",
+    "submitting": "Authenticating terminal…",
+    "errorGeneric": "Login failed. Check your staff ID and password and try again.",
+    "locked": "Too many failed attempts. The account is temporarily locked.",
+    "note": "This access is logged. Unauthorized access attempts are automatically flagged."
+  },
+  "dashboard": {
+    "title": "Ward roster",
+    "loading": "Loading roster…",
+    "empty": "No patients found matching your search.",
+    "loadError": "Could not load the roster. Check the connection and retry.",
+    "retry": "Retry",
+    "searchPlaceholder": "Search name or hospital number",
+    "filterAll": "All",
+    "logout": "Log out",
+    "dutyLabel": "Duty",
+    "breakGlassOnly": "Break-glass only"
+  },
+  "redaction": {
+    "label": "Restricted",
+    "reasons": {
+      "CLERK_NO_CLINICAL": "Restricted to clinical staff",
+      "CLERK_OUT_OF_QUEUE": "Outside your intake queue",
+      "ADMIN_NO_CLINICAL": "Administrators cannot view clinical content",
+      "WARD_MISMATCH": "Outside your assigned ward",
+      "OFF_DUTY": "Outside your active duty",
+      "ROLE_CANNOT_WRITE": "Your role cannot edit this field"
+    }
+  },
+  "offline": {
+    "bar": "Offline · Local cache active",
+    "queued": "queued",
+    "syncNow": "Sync now",
+    "lastSync": "Last sync"
+  }
+}

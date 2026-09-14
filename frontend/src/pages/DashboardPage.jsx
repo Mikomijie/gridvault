@@ -1,4 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext.jsx';
+import { api } from '../lib/api.js';
+import en from '../i18n/en.json';
 
 const Icons = {
   menu: (
@@ -378,56 +382,74 @@ const Icons = {
 };
 
 export default function DashboardPage() {
+  const navigate = useNavigate();
+  const { user, dutyState, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  // Real roster (P8): policy-scoped server rows only. The roster carries no
+  // clinical fields by design — diagnoses and vitals live on the dossier.
+  const [patients, setPatients] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
 
-  const patients = [
-    {
-      id: 'HOSP-LOS-2025-081',
-      name: 'Chinedu Nnamdi',
-      bed: 'A-04',
-      status: 'stable',
-      age: 42,
-      diagnosis: 'Post-operative recovery, Appendectomy',
-      vitals: { heartRate: 78, bp: '120/80', spo2: 98, temp: '36.8' },
-      lastAccessed: '2 mins ago',
-      notes: 3
-    },
-    {
-      id: 'HOSP-LOS-2025-082',
-      name: 'Amara Okafor',
-      bed: 'A-05',
-      status: 'observation',
-      age: 31,
-      diagnosis: 'Hypertensive crisis, under monitoring',
-      vitals: { heartRate: 92, bp: '158/95', spo2: 96, temp: '37.2' },
-      lastAccessed: '15 mins ago',
-      notes: 5
-    },
-    {
-      id: 'HOSP-LOS-2025-083',
-      name: 'Funke Adeyemi',
-      bed: 'A-06',
-      status: 'stable',
-      age: 55,
-      diagnosis: 'Type 2 Diabetes, medication adjustment',
-      vitals: { heartRate: 72, bp: '118/78', spo2: 99, temp: '36.5' },
-      lastAccessed: '8 mins ago',
-      notes: 2
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await api.roster();
+        if (!cancelled) setPatients(res.data ?? []);
+      } catch (err) {
+        if (!cancelled) setLoadError(err.message ?? en.dashboard.loadError);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const reload = async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const res = await api.roster();
+      setPatients(res.data ?? []);
+    } catch (err) {
+      setLoadError(err.message ?? en.dashboard.loadError);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
-  const filteredPatients = patients.filter((p) => {
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login', { replace: true });
+  };
+
+  const cards = patients.map((row) => ({
+    id: row.hospital_number,
+    name: row.full_name,
+    bed: row.bed_number ?? '—',
+    status: row.status ?? 'unknown',
+    age: row.age ?? '—',
+    ward: row.ward,
+    masked: row.masked === true,
+    canBreakGlass: row.can_break_glass === true
+  }));
+
+  const filteredPatients = cards.filter((p) => {
     const matchesSearch =
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      String(p.name).toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.id.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = filterStatus === 'all' || p.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
 
-  const stableCount = patients.filter((p) => p.status === 'stable').length;
-  const observationCount = patients.filter((p) => p.status === 'observation').length;
+  const stableCount = cards.filter((p) => p.status === 'stable').length;
+  const observationCount = cards.filter((p) => p.status === 'observation').length;
+  const criticalCount = cards.filter((p) => p.status === 'critical').length;
 
   const navItems = [
     { icon: Icons.gridView, label: 'Ward Overview', active: true },
@@ -466,9 +488,11 @@ export default function DashboardPage() {
           </div>
 
           <div className="hidden md:flex flex-col items-center justify-center text-center">
-            <div className="text-[14px] font-semibold text-[#005ea4]">Good Morning, Chioma</div>
+            <div className="text-[14px] font-semibold text-[#005ea4]">
+              {user?.full_name ?? en.dashboard.title}
+            </div>
             <div className="text-[12px] text-[#404752]">
-              Staff Nurse • St. Nicholas Hospital Lagos
+              {user ? `${user.role} • ${user.ward}` : ''}{dutyState ? ` • ${en.dashboard.dutyLabel}: ${dutyState}` : ''}
             </div>
           </div>
 
@@ -523,7 +547,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between mb-2">
               <span className="text-[11px] font-bold text-[#404752] flex items-center gap-1">
                 <span className="text-[#006a62]">{Icons.lock}</span>
-                NDPR Compliant
+                Audit log active
               </span>
               <span className="text-[11px] font-bold text-[#006a62]">Audit: Active</span>
             </div>
@@ -550,18 +574,22 @@ export default function DashboardPage() {
                 <div className="flex flex-col min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-[20px] font-semibold text-[#131b2e]">
-                      Good Morning, Chioma
+                      {user?.full_name ?? ''}
                     </span>
                     <span className="px-1 py-0.5 rounded bg-[#eaedff] text-[11px] font-bold text-[#404752]">
-                      RN-STN-2025
+                      {user?.role ?? ''}
                     </span>
                   </div>
                   <div className="text-[14px] text-[#404752] flex items-center gap-2 flex-wrap mt-0.5">
-                    <span className="text-[12px] font-bold text-[#005ea4]">RN Chioma Okonkwo</span>
+                    <span className="text-[12px] font-bold text-[#005ea4]">{user?.staff_id ?? ''}</span>
                     <span className="text-[#c0c7d4]">•</span>
-                    <span className="text-[12px]">ID: SN-7742</span>
-                    <span className="text-[#c0c7d4]">•</span>
-                    <span className="text-[12px]">Ward A Inpatient Nursing Station</span>
+                    <span className="text-[12px]">{user?.ward ?? ''}</span>
+                    {dutyState && (
+                      <>
+                        <span className="text-[#c0c7d4]">•</span>
+                        <span className="text-[12px]">{en.dashboard.dutyLabel}: {dutyState}</span>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -573,7 +601,7 @@ export default function DashboardPage() {
                     <span className="text-[11px] font-bold tracking-[0.05em] text-[#404752] uppercase leading-none">
                       Ward Allocation
                     </span>
-                    <span className="text-[12px] font-bold text-[#131b2e]">Ward A (East Wing)</span>
+                    <span className="text-[12px] font-bold text-[#131b2e]">{user?.ward ?? ''}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 bg-[#eaedff] px-4 py-2 rounded-lg">
@@ -583,7 +611,7 @@ export default function DashboardPage() {
                       Shift Assignment
                     </span>
                     <span className="text-[12px] font-bold text-[#131b2e]">
-                      Morning (6:00 AM - 2:00 PM)
+                      {user?.shift ?? ''}{dutyState ? ` (${dutyState})` : ''}
                     </span>
                   </div>
                 </div>
@@ -591,13 +619,14 @@ export default function DashboardPage() {
                   <button className="w-10 h-10 rounded-lg bg-[#eaedff] text-[#404752] hover:bg-[#e2e7ff] flex items-center justify-center transition-colors">
                     {Icons.tune}
                   </button>
-                  <a
-                    href="/login"
+                  <button
+                    type="button"
+                    onClick={handleLogout}
                     className="px-4 h-10 rounded-lg bg-[#ffdad6] text-[#93000a] hover:bg-[#ba1a1a] hover:text-white text-[12px] font-bold flex items-center gap-1 transition-colors"
                   >
                     {Icons.logout}
-                    <span>Logout</span>
-                  </a>
+                    <span>{en.dashboard.logout}</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -606,26 +635,14 @@ export default function DashboardPage() {
             <div className="bg-white rounded-xl p-4 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div className="flex items-center flex-wrap gap-4">
                 <div className="inline-flex items-center gap-1.5 bg-[#81f3e5]/25 text-[#006a62] px-3 py-1 rounded-full text-[12px] font-bold">
-                  <span className="text-[#006a62]">{Icons.checkCircle}</span>3 Patients Assigned
+                  <span className="text-[#006a62]">{Icons.checkCircle}</span>
+                  {cards.length} patients in scope
                 </div>
-                <div className="inline-flex items-center gap-1.5 text-[#404752] px-3 py-1 rounded-full bg-[#eaedff] text-[12px] font-bold">
-                  <span className="text-[#006a62]">{Icons.sync}</span>
-                  Last sync: 2 mins ago
-                </div>
-                <div className="inline-flex items-center gap-1.5 text-[#006a62] px-3 py-1 rounded-full bg-[#81f3e5]/25 text-[12px] font-bold">
-                  <span className="w-2 h-2 rounded-full bg-[#006a62] animate-pulse"></span>
-                  Online • Lagos Vault Node
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <button className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-[#eaedff] text-[#131b2e] text-[12px] font-bold rounded-xl shadow-sm border border-[#c0c7d4] transition-colors">
-                  <span className="text-[#005ea4]">{Icons.factCheck}</span>
-                  Batch Vitals Sign-off
-                </button>
-                <button className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-[#eaedff] text-[#131b2e] text-[12px] font-bold rounded-xl shadow-sm border border-[#c0c7d4] transition-colors">
-                  <span className="text-[#006a62]">{Icons.print}</span>
-                  Handover Sheet
-                </button>
+                {dutyState && (
+                  <div className="inline-flex items-center gap-1.5 text-[#404752] px-3 py-1 rounded-full bg-[#eaedff] text-[12px] font-bold">
+                    {en.dashboard.dutyLabel}: {dutyState}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -638,7 +655,7 @@ export default function DashboardPage() {
                   </span>
                   <input
                     type="text"
-                    placeholder="Search patient name or ID..."
+                    placeholder={en.dashboard.searchPlaceholder}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => e.key === 'Escape' && setSearchQuery('')}
@@ -654,9 +671,10 @@ export default function DashboardPage() {
 
               <div className="bg-[#e2e7ff] p-1 rounded-xl flex items-center gap-1 w-fit">
                 {[
-                  { label: 'All', value: 'all', count: patients.length },
+                  { label: 'All', value: 'all', count: cards.length },
                   { label: 'Stable', value: 'stable', count: stableCount },
-                  { label: 'Observation', value: 'observation', count: observationCount }
+                  { label: 'Observation', value: 'observation', count: observationCount },
+                  { label: 'Critical', value: 'critical', count: criticalCount }
                 ].map((f) => (
                   <button
                     key={f.value}
@@ -684,12 +702,27 @@ export default function DashboardPage() {
                 </div>
                 <div className="hidden md:flex items-center gap-1.5 text-[12px] text-[#404752]">
                   <span className="text-[#006a62]">{Icons.verifiedUser}</span>
-                  Standard Ward A protocol enforced
+                  {user?.ward ?? ''}
                 </div>
               </div>
 
-              <div className="flex flex-col gap-4">
-                {filteredPatients.length > 0 ? (
+              <div className="flex flex-col gap-4" aria-live="polite">
+                {loading ? (
+                  <div className="bg-white rounded-xl p-12 text-center shadow-sm">
+                    <p className="text-[16px] font-semibold text-[#404752]">{en.dashboard.loading}</p>
+                  </div>
+                ) : loadError !== null ? (
+                  <div className="bg-white rounded-xl p-12 text-center shadow-sm">
+                    <p className="text-[16px] font-semibold text-[#93000a]">{en.dashboard.loadError}</p>
+                    <button
+                      type="button"
+                      onClick={reload}
+                      className="mt-4 text-[12px] font-bold text-[#005ea4] hover:underline"
+                    >
+                      {en.dashboard.retry}
+                    </button>
+                  </div>
+                ) : filteredPatients.length > 0 ? (
                   filteredPatients.map((patient) => (
                     <article
                       key={patient.id}
@@ -729,73 +762,13 @@ export default function DashboardPage() {
                               <span className="text-[#c0c7d4]">•</span>
                               <span>Age {patient.age}</span>
                               <span className="text-[#c0c7d4]">•</span>
-                              <span>{patient.diagnosis}</span>
+                              <span>{patient.ward}</span>
                             </div>
-                            <div className="text-[11px] text-[#707783] mt-1 flex items-center gap-1">
-                              {Icons.history} Last accessed {patient.lastAccessed}
-                            </div>
-                          </div>
-                          <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 flex-shrink-0">
-                            <button className="inline-flex items-center gap-1 px-4 py-2 bg-[#005ea4] hover:bg-[#0077ce] text-white text-[12px] font-bold rounded-lg transition-colors whitespace-nowrap">
-                              {Icons.folderOpen} View Record
-                            </button>
-                            <button className="inline-flex items-center gap-1 px-4 py-2 bg-[#eaedff] hover:bg-[#e2e7ff] text-[#131b2e] text-[12px] font-bold rounded-lg transition-colors whitespace-nowrap">
-                              {Icons.editNote} Add Note
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-[#e2e7ff]">
-                          <div className="bg-[#eaedff] p-3 rounded-lg text-center">
-                            <p className="text-[11px] font-bold tracking-[0.05em] text-[#404752] uppercase mb-1">
-                              Heart Rate
-                            </p>
-                            <p className="text-[22px] font-bold text-[#005ea4]">
-                              {patient.vitals.heartRate}
-                            </p>
-                            <p className="text-[11px] text-[#404752]">bpm</p>
-                          </div>
-                          <div className="bg-[#eaedff] p-3 rounded-lg text-center">
-                            <p className="text-[11px] font-bold tracking-[0.05em] text-[#404752] uppercase mb-1">
-                              Blood Pressure
-                            </p>
-                            <p className="text-[22px] font-bold text-[#005ea4]">
-                              {patient.vitals.bp}
-                            </p>
-                            <p className="text-[11px] text-[#404752]">mmHg</p>
-                          </div>
-                          <div className="bg-[#eaedff] p-3 rounded-lg text-center">
-                            <p className="text-[11px] font-bold tracking-[0.05em] text-[#404752] uppercase mb-1">
-                              SpO2
-                            </p>
-                            <p className="text-[22px] font-bold text-[#006a62]">
-                              {patient.vitals.spo2}%
-                            </p>
-                            <p className="text-[11px] text-[#404752]">oxygen</p>
-                          </div>
-                          <div className="bg-[#eaedff] p-3 rounded-lg text-center">
-                            <p className="text-[11px] font-bold tracking-[0.05em] text-[#404752] uppercase mb-1">
-                              Temperature
-                            </p>
-                            <p className="text-[22px] font-bold text-[#005ea4]">
-                              {patient.vitals.temp}
-                            </p>
-                            <p className="text-[11px] text-[#404752]">°C</p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between pt-3 mt-3 border-t border-[#e2e7ff] flex-wrap gap-2">
-                          <div className="flex items-center gap-1 text-[12px] text-[#404752]">
-                            {Icons.notesMedical} {patient.notes} clinical notes on record
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <button className="inline-flex items-center gap-1 text-[12px] font-bold text-[#005ea4] hover:underline">
-                              {Icons.monitorHeartSmall} View Vitals History
-                            </button>
-                            <span className="text-[#c0c7d4]">•</span>
-                            <button className="inline-flex items-center gap-1 text-[12px] font-bold text-[#005ea4] hover:underline">
-                              {Icons.medicationSmall} Medications
-                            </button>
+                            {patient.canBreakGlass && (
+                              <div className="text-[11px] font-bold text-[#93000a] mt-1">
+                                {en.dashboard.breakGlassOnly}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -807,7 +780,7 @@ export default function DashboardPage() {
                       {Icons.searchOff}
                     </span>
                     <p className="text-[16px] font-semibold text-[#404752]">
-                      No patients found matching your search.
+                      {en.dashboard.empty}
                     </p>
                     <button
                       onClick={() => {
@@ -840,10 +813,9 @@ export default function DashboardPage() {
                     </p>
                   </div>
                 </div>
-                <button className="bg-[#b6171e] hover:bg-[#93000a] text-white text-[14px] font-bold px-6 py-3 rounded-lg transition-all whitespace-nowrap shadow-md flex items-center gap-2 flex-shrink-0">
-                  {Icons.crisisAlert}
-                  Emergency Access
-                </button>
+                <p className="text-[12px] font-bold text-[#93000a] whitespace-nowrap flex-shrink-0">
+                  Emergency override is requested from a patient chart and always notifies the CMO.
+                </p>
               </div>
             </div>
           </div>

@@ -1,0 +1,42 @@
+import { defineConfig, devices } from '@playwright/test';
+
+// E2E runs the real stack: seeded demo API on :8080 plus the Vite dev
+// server on :5173. The API reseeds on every run (demo:reset) so specs are
+// deterministic and isolated from developer data.
+export default defineConfig({
+  testDir: './frontend/test/e2e',
+  fullyParallel: false,
+  retries: 0,
+  reporter: 'list',
+  use: {
+    baseURL: 'http://localhost:5173',
+    trace: 'retain-on-failure'
+  },
+  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  webServer: [
+    {
+      command: 'mkdir -p data && npm run demo:reset && npx tsx backend/src/index.ts',
+      port: 8080,
+      reuseExistingServer: false,
+      timeout: 120000,
+      env: {
+        ...process.env,
+        PORT: '8080',
+        GRIDVAULT_MASTER_KEY: 'k8s9J3nF9x0q1w2e3r4t5y6u7i8o9p0a1s2d3f4g5h6=',
+        CORS_ALLOWED_ORIGINS: 'http://localhost:5173',
+        DEMO_MODE: 'true',
+        LOG_LEVEL: 'error'
+      } as Record<string, string>
+    },
+    {
+      command: 'npm run dev --workspace=frontend',
+      port: 5173,
+      reuseExistingServer: false,
+      timeout: 120000,
+      env: {
+        ...process.env,
+        VITE_API_BASE_URL: 'http://localhost:8080'
+      } as Record<string, string>
+    }
+  ]
+});
