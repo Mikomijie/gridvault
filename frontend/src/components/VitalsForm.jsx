@@ -92,6 +92,7 @@ export default function VitalsForm({ hospitalNumber, onRecorded }) {
           <label key={key} className="block text-[12px] font-bold text-[#404752]">
             {label}
             <input
+              name={key}
               value={values[key]}
               onChange={set(key)}
               inputMode="decimal"

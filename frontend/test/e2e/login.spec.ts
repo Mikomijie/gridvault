@@ -20,7 +20,7 @@ test('AT-602: login as each of the 5 personas reaches the dashboard roster', asy
     });
     // Server identity, not client choice: the dashboard shows the record.
     await expect(page.getByText(staffId).first()).toBeVisible();
-    await page.getByRole('button', { name: /Log out/i }).click();
+    await page.getByRole('main').getByRole('button', { name: /Log out/i }).click();
     await expect(page).toHaveURL(/\/login/);
   }
 });

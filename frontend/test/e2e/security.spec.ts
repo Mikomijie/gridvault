@@ -57,7 +57,7 @@ test('AT-614: CMO acknowledges a grant from the review queue', async ({ page }) 
     timeout: 15000
   });
   await page.goto('/dashboard');
-  await page.getByRole('button', { name: /Log out/i }).click();
+  await page.getByRole('main').getByRole('button', { name: /Log out/i }).click();
   await expect(page).toHaveURL(/\/login/);
 
   await login(page, 'GV-9101');

@@ -41,7 +41,8 @@
     "filterAll": "All",
     "logout": "Log out",
     "dutyLabel": "Duty",
-    "breakGlassOnly": "Break-glass only"
+    "breakGlassOnly": "Break-glass only",
+    "handover": "SBAR handover"
   },
   "redaction": {
     "label": "Restricted",
@@ -159,5 +160,13 @@
     "body": "The chart was hidden after 3 minutes without input. Enter your PIN to resume.",
     "pinLabel": "PIN",
     "unlock": "Unlock"
+  },
+  "handover": {
+    "title": "SBAR handover",
+    "print": "Print",
+    "loading": "Loading handover sheet…",
+    "loadError": "Could not load the handover sheet.",
+    "generated": "Generated",
+    "ward": "Ward"
   }
 }

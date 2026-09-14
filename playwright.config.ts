@@ -27,6 +27,7 @@ export default defineConfig({
         ...process.env,
         PORT: '8080',
         GRIDVAULT_MASTER_KEY: 'k8s9J3nF9x0q1w2e3r4t5y6u7i8o9p0a1s2d3f4g5h6=',
+        ACCESS_TOKEN_TTL_MINUTES: '1',
         CORS_ALLOWED_ORIGINS: 'http://localhost:5173',
         DEMO_MODE: 'true',
         LOG_LEVEL: 'error'

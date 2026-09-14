@@ -452,14 +452,14 @@ export default function DashboardPage() {
   const observationCount = cards.filter((p) => p.status === 'observation').length;
   const criticalCount = cards.filter((p) => p.status === 'critical').length;
 
+  // Only destinations that exist as routes. Vitals history, MAR sign-off
+  // and notes entry live on the patient dossier; the rest of the legacy
+  // sidebar was dead href="#" links and is gone (see DECISIONS.md).
   const navItems = [
-    { icon: Icons.gridView, label: 'Ward Overview', active: true },
-    { icon: Icons.patientList, label: 'Patient Roster', active: false },
-    { icon: Icons.monitorHeart, label: 'Vitals & Triage', active: false },
-    { icon: Icons.medication, label: 'MAR (Medications)', active: false },
-    { icon: Icons.clinicalNotes, label: 'Nurse Notes & Handover', active: false },
-    { icon: Icons.emergency, label: 'Code Blue & Rapid Call', active: false }
-  ];
+    { icon: Icons.gridView, label: 'Ward Overview', to: '/dashboard' },
+    { icon: Icons.clinicalNotes, label: 'SBAR Handover', to: '/dashboard/handover', roles: ['doctor', 'nurse'] },
+    { icon: Icons.verifiedUser, label: 'Security Console', to: '/dashboard/security', roles: ['admin', 'cmo'] }
+  ].filter((item) => item.roles === undefined || (user?.role !== undefined && item.roles.includes(user.role)));
 
   return (
     <div className="min-h-screen bg-[#faf8ff] font-sans text-[#131b2e] antialiased">
@@ -505,13 +505,14 @@ export default function DashboardPage() {
             <div className="w-8 h-8 rounded-full bg-[#005ea4] flex items-center justify-center flex-shrink-0 text-white">
               {Icons.person}
             </div>
-            <a
-              href="/login"
+            <button
+              type="button"
+              onClick={handleLogout}
               className="inline-flex items-center gap-1 px-3 py-1.5 rounded border border-[#c0c7d4] text-[#ba1a1a] hover:bg-[#ffdad6] hover:text-[#93000a] text-[12px] font-bold transition-colors"
             >
               {Icons.logout}
-              <span className="hidden sm:inline">Logout</span>
-            </a>
+              <span className="hidden sm:inline">{en.dashboard.logout}</span>
+            </button>
           </div>
         </div>
       </header>
@@ -524,20 +525,28 @@ export default function DashboardPage() {
               Ward Navigation
             </div>
             <nav className="flex flex-col gap-1">
-              {navItems.map((item, idx) => (
-                <a
-                  key={idx}
-                  href="#"
-                  className={`flex items-center gap-3 px-2 py-2 rounded transition-colors text-[14px] font-semibold ${
-                    item.active
-                      ? 'bg-[#d3e4ff] text-[#005ea4] font-bold shadow-sm'
-                      : 'text-[#404752] hover:bg-[#eaedff] hover:text-[#131b2e]'
-                  }`}
-                >
-                  {item.icon}
-                  {item.label}
-                </a>
-              ))}
+              {navItems.map((item) => {
+                const active =
+                  item.to === '/dashboard'
+                    ? window.location.pathname === '/dashboard'
+                    : window.location.pathname.startsWith(item.to);
+                return (
+                  <button
+                    key={item.to}
+                    type="button"
+                    onClick={() => navigate(item.to)}
+                    aria-current={active ? 'page' : undefined}
+                    className={`flex w-full items-center gap-3 px-2 py-2 rounded transition-colors text-[14px] font-semibold ${
+                      active
+                        ? 'bg-[#d3e4ff] text-[#005ea4] font-bold shadow-sm'
+                        : 'text-[#404752] hover:bg-[#eaedff] hover:text-[#131b2e]'
+                    }`}
+                  >
+                    {item.icon}
+                    {item.label}
+                  </button>
+                );
+              })}
             </nav>
           </div>
 
@@ -638,6 +647,15 @@ export default function DashboardPage() {
                   <div className="inline-flex items-center gap-1.5 text-[#404752] px-3 py-1 rounded-full bg-[#eaedff] text-[12px] font-bold">
                     {en.dashboard.dutyLabel}: {dutyState}
                   </div>
+                )}
+                {(user?.role === 'doctor' || user?.role === 'nurse') && (
+                  <button
+                    type="button"
+                    onClick={() => navigate('/dashboard/handover')}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#005ea4] text-[12px] font-bold text-white"
+                  >
+                    {en.dashboard.handover}
+                  </button>
                 )}
               </div>
             </div>

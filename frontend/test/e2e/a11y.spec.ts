@@ -38,7 +38,7 @@ test('AT-903: axe scans are clean on dashboard, dossier and the break-glass moda
   await expect(page.getByText(/Security console/i)).toBeVisible({ timeout: 15000 });
   await expectNoViolations(page, 'security');
   await page.goto('/dashboard');
-  await page.getByRole('button', { name: /Log out/i }).click();
+  await page.getByRole('main').getByRole('button', { name: /Log out/i }).click();
   await expect(page).toHaveURL(/\/login/);
   await login(page, 'GV-9042');
   await page.goto('/dashboard/patient/HOSP-LOS-2025-081');

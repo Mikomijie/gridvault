@@ -8,6 +8,25 @@
   box-sizing: border-box;
 }
 
+/* Ward tablets are operated with gloves (AT-620): every touch target is
+ * at least 44x44 CSS px. Applied globally rather than per-control so no
+ * screen can regress it silently. Checkboxes keep a 22px box inside a
+ * full-height label row, which is the effective target. */
+button {
+  min-height: 44px;
+  min-width: 44px;
+}
+input:not([type='checkbox']):not([type='radio']),
+select,
+textarea {
+  min-height: 44px;
+}
+input[type='checkbox'],
+input[type='radio'] {
+  width: 22px;
+  height: 22px;
+}
+
 html,
 body {
   width: 100%;

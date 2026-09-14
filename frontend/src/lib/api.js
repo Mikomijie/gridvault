@@ -10,6 +10,13 @@
 
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080').replace(/\/+$/, '');
 
+// Session-scoped terminal identity for audit attribution (watermarks,
+// terminal_id on ledger entries). In memory only — never persisted.
+const TERMINAL_ID =
+  typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? `ward-terminal-${crypto.randomUUID().slice(0, 8)}`
+    : `ward-terminal-${Math.floor(Math.random() * 1e8)}`;
+
 let accessToken = null;
 let refreshInFlight = null;
 
@@ -103,6 +110,8 @@ export const api = {
     return apiFetch(`/api/patients${query.length > 0 ? `?${query}` : ''}`);
   },
   dossier: (hospitalNumber) => apiFetch(`/api/patients/${encodeURIComponent(hospitalNumber)}`),
+  handover: (ward) =>
+    apiFetch(`/api/handover?ward=${encodeURIComponent(ward)}&terminal_id=${encodeURIComponent(TERMINAL_ID)}`),
   recordVitals: (hospitalNumber, vitals) =>
     apiFetch(`/api/patients/${encodeURIComponent(hospitalNumber)}/vitals`, { method: 'POST', body: vitals }),
   overrideExecute: (input) => apiFetch('/api/override/execute', { method: 'POST', body: input }),

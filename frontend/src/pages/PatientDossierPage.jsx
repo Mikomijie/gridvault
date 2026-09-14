@@ -26,25 +26,37 @@ export default function PatientDossierPage() {
   const [dossier, setDossier] = useState(null);
   const [denial, setDenial] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [reloadError, setReloadError] = useState(null);
+  const loadedOnce = React.useRef(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [modalError, setModalError] = useState(null);
 
   const load = useCallback(async () => {
-    setLoading(true);
-    setDenial(null);
+    // Background reloads (after a vitals save or a grant) must not unmount
+    // the chart: that wiped form confirmations and flashed loaders. The
+    // first load gates on `loading`; later ones patch state in place — but
+    // an authorization change (revoke/expiry) still re-locks immediately.
+    if (!loadedOnce.current) setLoading(true);
+    setReloadError(null);
     try {
       const res = await api.dossier(id);
       setDossier(res);
+      setDenial(null);
     } catch (err) {
-      if (err instanceof ApiError && (err.status === 403 || err.status === 404 || err.status === 410)) {
-        setDenial(err);
+      const authChanged = err instanceof ApiError && (err.status === 403 || err.status === 404 || err.status === 410);
+      if (!loadedOnce.current || authChanged) {
+        setDenial(
+          authChanged
+            ? err
+            : new ApiError({ status: 0, code: 'LOAD_FAILED', message: en.dossier.loadError })
+        );
         setDossier(null);
       } else {
-        setDenial(new ApiError({ status: 0, code: 'LOAD_FAILED', message: en.dossier.loadError }));
-        setDossier(null);
+        setReloadError(err.message);
       }
     } finally {
+      loadedOnce.current = true;
       setLoading(false);
     }
   }, [id]);
@@ -106,6 +118,11 @@ export default function PatientDossierPage() {
         </button>
 
         {loading && <p className="mt-6 text-[15px] font-semibold text-[#404752]">{en.dossier.loading}</p>}
+        {reloadError !== null && (
+          <p role="alert" className="mt-3 rounded-lg bg-[#ffdad6] px-4 py-2 text-[13px] font-bold text-[#93000a]">
+            {reloadError}
+          </p>
+        )}
 
         {!loading && denial !== null && (
           <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
@@ -223,7 +240,13 @@ export default function PatientDossierPage() {
                 renderGroup(
                   'SENSITIVE',
                   dossier.data.sensitive ? (
-                    <dl className="grid grid-cols-1 gap-2 text-[14px]">
+                    // Speed bump, not a control (PRD 14.4): copying sensitive
+                    // values is intercepted at the container. The server
+                    // never sends values the subject may not see.
+                    <dl
+                      className="grid grid-cols-1 gap-2 select-none text-[14px]"
+                      onCopy={(event) => event.preventDefault()}
+                    >
                       {Object.entries(dossier.data.sensitive).map(([key, value]) => (
                         <div key={key} className="flex gap-2">
                           <dt className="font-bold text-[#404752]">{key}:</dt>
