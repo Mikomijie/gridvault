@@ -21,7 +21,7 @@
 
 import type { GridVaultDatabase } from '../db/connection.js';
 import type { Clock } from '../clock.js';
-import { formatIsoWithOffset, systemClock } from '../clock.js';
+import { systemClock } from '../clock.js';
 import { raiseAbuseAlert } from './alerts.js';
 import { loadAbuseRules, type AbuseRuleThresholds } from './config.js';
 import { escalationSeverity } from './rules/rule02-off-ward.js';
@@ -365,8 +365,6 @@ export function detectSensitiveSweep(
   ) {
     return;
   }
-  const at = formatIsoWithOffset(clock.now(), timeZone);
-  void at;
   raiseAbuseAlert(
     db,
     {
