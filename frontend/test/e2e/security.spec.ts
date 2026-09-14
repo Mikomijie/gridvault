@@ -82,6 +82,8 @@ test('AT-612: after demo:tamper, Verify chain names the break and highlights the
   await page.getByRole('button', { name: /^Verify chain$/i }).click();
   await expect(page.getByText(/TAMPERED: index 3 \(HASH_MISMATCH\)/i)).toBeVisible({ timeout: 15000 });
   await page.getByRole('tab', { name: /^Ledger$/i }).click();
+  await page.getByPlaceholder(/Filter by staff ID/i).fill('ATTACKER');
+  await page.getByRole('button', { name: /^Apply$/i }).click();
   const row = page.locator('tr', { hasText: 'ATTACKER' }).first();
   await expect(row).toBeVisible({ timeout: 15000 });
 });

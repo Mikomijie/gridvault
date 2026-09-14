@@ -39,7 +39,12 @@ export default defineConfig({
       timeout: 120000,
       env: {
         ...process.env,
-        VITE_API_BASE_URL: 'http://localhost:8080'
+        VITE_API_BASE_URL: 'http://localhost:8080',
+        // Fast, deterministic timing for the offline and lock specs.
+        VITE_HEARTBEAT_MS: '1000',
+        VITE_OFFLINE_FAILURES: '2',
+        VITE_IDLE_LOCK_SECONDS: '6',
+        VITE_HARD_LOCK_SECONDS: '25'
       } as Record<string, string>
     }
   ]

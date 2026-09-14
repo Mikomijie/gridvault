@@ -17,6 +17,7 @@ export default function SecurityPage() {
   const [tab, setTab] = useState('ledger');
   const [logs, setLogs] = useState([]);
   const [actionFilter, setActionFilter] = useState('');
+  const [staffFilter, setStaffFilter] = useState('');
   const [verify, setVerify] = useState(null);
   const [verifying, setVerifying] = useState(false);
   const [alerts, setAlerts] = useState([]);
@@ -25,10 +26,12 @@ export default function SecurityPage() {
   const [demoRunning, setDemoRunning] = useState(false);
 
   const loadLogs = useCallback(async () => {
-    const params = actionFilter.trim().length > 0 ? { action: actionFilter.trim(), limit: 100 } : { limit: 100 };
+    const params = { limit: 100 };
+    if (actionFilter.trim().length > 0) params.action = actionFilter.trim();
+    if (staffFilter.trim().length > 0) params.staff_id = staffFilter.trim();
     const res = await api.auditLogs(params);
     setLogs(res.data ?? []);
-  }, [actionFilter]);
+  }, [actionFilter, staffFilter]);
 
   const loadAlerts = useCallback(async () => {
     const res = await api.abuseAlerts({ limit: 50 });
@@ -135,6 +138,13 @@ export default function SecurityPage() {
                 placeholder={en.security.filterAction}
                 value={actionFilter}
                 onChange={(e) => setActionFilter(e.target.value)}
+                className="h-9 rounded-lg bg-[#f2f3ff] px-3 text-[13px]"
+              />
+              <input
+                aria-label={en.security.filterStaff}
+                placeholder={en.security.filterStaff}
+                value={staffFilter}
+                onChange={(e) => setStaffFilter(e.target.value)}
                 className="h-9 rounded-lg bg-[#f2f3ff] px-3 text-[13px]"
               />
               <button type="submit" className="rounded-lg bg-[#005ea4] px-4 text-[13px] font-bold text-white">

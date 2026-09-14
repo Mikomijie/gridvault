@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { api } from '../lib/api.js';
+import OfflineBar from '../components/OfflineBar.jsx';
 import en from '../i18n/en.json';
 
 const Icons = {
@@ -561,6 +562,7 @@ export default function DashboardPage() {
       {/* MAIN CONTENT */}
       <div className={`${sidebarOpen ? 'lg:pl-64' : ''} pt-16`}>
         <main className="min-h-screen bg-[#faf8ff] w-full">
+          <OfflineBar />
           <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex flex-col gap-6">
             {/* GREETING CARD */}
             <div className="bg-white rounded-xl p-6 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">

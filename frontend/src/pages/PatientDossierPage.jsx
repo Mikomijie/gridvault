@@ -6,6 +6,8 @@ import en from '../i18n/en.json';
 import RedactionChip from '../components/RedactionChip.jsx';
 import BreakGlassModal from '../components/BreakGlassModal.jsx';
 import EmergencyBanner from '../components/EmergencyBanner.jsx';
+import OfflineBar from '../components/OfflineBar.jsx';
+import VitalsForm from '../components/VitalsForm.jsx';
 
 const TABS = ['overview', 'vitals', 'clinical', 'protected'];
 
@@ -93,6 +95,7 @@ export default function PatientDossierPage() {
   return (
     <div className="min-h-screen bg-[#faf8ff] font-sans text-[#131b2e]">
       <EmergencyBanner />
+      <OfflineBar />
       <main className="mx-auto max-w-5xl p-4 md:p-6" aria-live="polite">
         <button
           type="button"
@@ -180,22 +183,28 @@ export default function PatientDossierPage() {
                   )}
                 </dl>
               )}
-              {tab === 'vitals' &&
-                renderGroup(
-                  'VITALS',
-                  dossier.data.vitals?.latest ? (
-                    <dl className="grid grid-cols-2 gap-2 text-[14px] sm:grid-cols-4">
-                      {Object.entries(dossier.data.vitals.latest).map(([key, value]) => (
-                        <div key={key} className="rounded-lg bg-[#eaedff] p-3 text-center">
-                          <dt className="text-[11px] font-bold uppercase text-[#404752]">{key}</dt>
-                          <dd className="text-[20px] font-bold text-[#005ea4]">{String(value)}</dd>
-                        </div>
-                      ))}
-                    </dl>
-                  ) : (
-                    <p className="text-[14px] text-[#707783]">{en.dossier.noVitals}</p>
-                  )
-                )}
+              {tab === 'vitals' && (
+                <>
+                  {renderGroup(
+                    'VITALS',
+                    dossier.data.vitals?.latest ? (
+                      <dl className="grid grid-cols-2 gap-2 text-[14px] sm:grid-cols-4">
+                        {Object.entries(dossier.data.vitals.latest).map(([key, value]) => (
+                          <div key={key} className="rounded-lg bg-[#eaedff] p-3 text-center">
+                            <dt className="text-[11px] font-bold uppercase text-[#404752]">{key}</dt>
+                            <dd className="text-[20px] font-bold text-[#005ea4]">{String(value)}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    ) : (
+                      <p className="text-[14px] text-[#707783]">{en.dossier.noVitals}</p>
+                    )
+                  )}
+                  {dossier.data.vitals !== null && (
+                    <VitalsForm hospitalNumber={id} onRecorded={() => load().catch(() => undefined)} />
+                  )}
+                </>
+              )}
               {tab === 'clinical' &&
                 renderGroup(
                   'CLINICAL',

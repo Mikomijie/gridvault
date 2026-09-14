@@ -58,7 +58,10 @@
     "bar": "Offline · Local cache active",
     "queued": "queued",
     "syncNow": "Sync now",
-    "lastSync": "Last sync"
+    "lastSync": "Last sync",
+    "syncing": "Syncing…",
+    "simulate": "Simulate grid outage",
+    "synced": "Synced"
   },
   "breakGlass": {
     "codes": [
@@ -135,6 +138,26 @@
     "healthy": "HEALTHY",
     "tampered": "TAMPERED",
     "runDemo": "Run abuse demonstration",
-    "acknowledge": "Acknowledge"
+    "acknowledge": "Acknowledge",
+    "filterStaff": "Filter by staff ID"
+  },
+  "vitals": {
+    "title": "Record vitals",
+    "heartRate": "Heart rate (bpm)",
+    "bloodPressure": "Blood pressure (sys/dia)",
+    "spo2": "SpO2 (%)",
+    "temperature": "Temperature (°C)",
+    "save": "Save vitals",
+    "queueOffline": "Queue offline",
+    "saved": "Vitals recorded.",
+    "queued": "Vitals queued for sync",
+    "invalid": "The vitals are outside clinically valid ranges",
+    "unsynced": "unsynced"
+  },
+  "lock": {
+    "title": "Terminal locked",
+    "body": "The chart was hidden after 3 minutes without input. Enter your PIN to resume.",
+    "pinLabel": "PIN",
+    "unlock": "Unlock"
   }
 }
