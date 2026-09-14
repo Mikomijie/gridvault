@@ -50,7 +50,7 @@ export default tseslint.config(
     }
   },
   {
-    files: ['backend/**/*.{js,ts}', 'witness/**/*.{js,ts}', 'scripts/**/*.{js,ts}'],
+    files: ['backend/**/*.{js,ts}', 'witness/**/*.{js,ts}', 'scripts/**/*.{js,ts}', 'scripts/**/*.mjs'],
     languageOptions: {
       globals: {
         ...globals.node
