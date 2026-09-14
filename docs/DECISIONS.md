@@ -86,3 +86,33 @@ This document records architectural, design, and operational decisions where AGE
   5. `demoTamper` simulates a host attacker (drops the append-only triggers, rewrites one allowlisted cell via direct file access, reinstalls the triggers byte-identical) and refuses `NODE_ENV=production` without the explicit corruption-acknowledgement flag; there is no HTTP path to it.
   6. Test inventory: AT-301/AT-302 in `backend/test/unit/ledger-hash.test.ts`; AT-303..AT-311 and AT-315 in `backend/test/integration/ledger.test.ts`; AT-312..AT-314 in `backend/test/integration/ledger-operational.test.ts` (real `gv` CLI child processes and the live witness child process over HTTP). Defensive branch pins live in `backend/test/unit/ledger-branches.test.ts` (no AT ids).
   7. Gates at commit time: `npm test` 61/61 passing (11 files), `npm run lint` 0 errors (8 pre-existing `security/detect-non-literal-fs-filename` warnings on operator file paths), `npm run typecheck` clean (backend + witness), `npm run test:coverage` exit 0 (no NFR-10 gate wired yet; that lands in Phase 9).
+
+### 2026-09-14 — Phase 6: Abuse Engine API, Alert Lifecycle, SSE, Demo Probe, AT-401..409
+
+- **Context:** AGENTS.md P6 requires RULE-ABUSE-01..09 as individual tested modules with config-driven thresholds, synchronous blocking evaluation, alert lifecycle, self-resolution prohibition, SSE streams, and a genuine demo probe.
+- **Decision:**
+  1. Rules 01-09 already existed as pure predicates in `src/abuse/rules/`; this phase added the HTTP surface (`src/http/routes/abuse.ts`): `GET /alerts` (admin/cmo only), `PATCH /alerts/:id` (forward-only FLAGGED->INVESTIGATING->RESOLVED, note required, self-resolution 403 CANNOT_RESOLVE_OWN_ALERT, ABUSE_ALERT_RESOLVED ledger entry), `GET /stream` (DB-backed 500 ms short-poll SSE, auth checked at connect, alert metadata only), `POST /demo/clerk-probe` (DEMO_MODE only; builds a server-side clerk subject with on_duty forced to isolate the queue control, calls RecordsService.readDossier through decide()->deny->obligations, returns denial + newest RULE-ABUSE-01 alert with genuine=decision_id match, never a fabricated row).
+  2. `GET /api/audit/stream` added symmetrically (ledger-read privilege via ledgerLogs check, replay-20 + 500 ms poll on log_index).
+  3. Boot now fails loudly on invalid `config/abuse-rules.json` (index.ts calls loadAbuseRules + loadJustifications; AT-409 asserts the named threshold).
+  4. Metrics: raiseAbuseAlert records per-rule counters; override execute records break-glass; 403s record denials by reason_code; /api/health/metrics renders Prometheus text with per-route p95, denials, alerts, verify status, outbox depth, anchor lag.
+  5. Logger: pino with redaction of PHI/credential/key paths (AT-908 hygiene).
+  6. AT-407 isolation: the bulk probe assigns the doctor a consulting care assignment on every patient first, otherwise RULE-ABUSE-07 sweep blocks at 5 distinct sensitive reads and the bulk count never reaches 21. Engine throttle state is reset at the test start (module-global lastReadMs map).
+  7. AT-408 counts 2 ABUSE_ALERT_RESOLVED entries (INVESTIGATING + RESOLVED each write one).
+- **Gates at commit time:** abuse.test.ts 10/10, sync unaffected.
+
+### 2026-09-14 — Phase 7: Offline Sync Batch + Paper Backfill, AT-504..509/513
+
+- **Context:** AGENTS.md P7 backend requires POST /api/sync/batch (idempotent, device_seq ordered, additive merges, 409 conflicts, SYNC_GAP_DETECTED, clock-skew flags, SYNC_REPLAY entries), POST /api/sync/backfill (dual timestamps, transcriber), GET /api/sync/status.
+- **Decision:**
+  1. New `src/sync/service.ts` (SyncService.applyBatch): <=100 mutations, sort by (device_id, device_seq), gap warnings computed pre-transaction (against stored max + intra-batch), whole batch in ONE transaction (kill -9 applies nothing; conflicts recorded as per-mutation conflict results with charge-nurse outbox task, never a rollback of siblings), idempotency by client_mutation_id (duplicates_ignored, zero new rows/ledger on replay), VITALS validation mirrors live ranges (422 INVALID_VITALS, field names only), policy write-check on replay (offline capture cannot launder unauthorized writes), PAPER_BACKFILL writes source=paper_backfill + BACKFILL_PAPER_SLIP with transcriber=caller, PATIENT_PATCH uses patients.version OCC (409 detail carries base_version+current_version).
+  2. `POST /api/sync/backfill` restricted to non-clerk roles (403 CLERK_NO_CLINICAL); slips map to PAPER_BACKFILL mutations with captured_at_source=user_entered.
+  3. Response shape `{processed, duplicates_ignored, conflicts, audit_entries_created, warnings[], results[]}`; warnings carry code SYNC_GAP_DETECTED + device + missing range text.
+- **Gates at commit time:** sync.test.ts 7/7.
+
+### 2026-09-14 — Cross-cutting: CLI, Judge, Observability
+
+- **Context:** AGENTS.md P6 CLI list requires seed, migrate, verify-ledger, export-ledger, anchor, backup, restore, rotate-key, subject-access, create-user, demo:tamper; section 10 requires `npm run judge`.
+- **Decision:**
+  1. Added `backup` (VACUUM INTO + sha256 manifest + BACKUP_CREATED chain entry), `restore --file` (manifest verify -> scratch copy -> chain verify -> swap + RESTORE_PERFORMED), `rotate-key --new-key` (decrypt-old/encrypt-new per row, key_version+1, one transaction), `subject-access --patient` (chronological patient-scoped ledger dump + chain status, AT-912), `create-user` (argon2id hashes computed before the transaction, USER_CREATED entry, no secret in ledger).
+  2. `scripts/judge.ts` runs the 12-step walkthrough against an isolated seeded stack and prints PASS/FAIL per step plus a summary (entries/alerts/grants/elapsed); step 9 simulates the root attacker by recomputing the chain and comparing against an independent receipt (WITNESS_DIVERGED).
+  3. docs/API.md and docs/OPERATIONS.md already documented the abuse/sync/health/CLI surface; no landing-page claim changes needed (no certification language present).
