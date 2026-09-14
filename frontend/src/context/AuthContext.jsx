@@ -4,6 +4,9 @@ import en from '../i18n/en.json';
 
 const AuthContext = createContext(null);
 
+// Module-scope: shared across StrictMode double-mounts of the provider.
+let restoreInFlight = null;
+
 /**
  * AuthProvider (P8). Authorization context — role, ward, shift, duty —
  * comes exclusively from GET /api/auth/me, i.e. the server-side user
@@ -14,6 +17,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [dutyState, setDutyState] = useState(null);
   const [activeGrants, setActiveGrants] = useState([]);
+  const [lastOverride, setLastOverride] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -30,19 +34,37 @@ export function AuthProvider({ children }) {
   // without a network round trip, and browsers log its 401 to the console —
   // the landing page must stay console-clean (AT-601). Lazy refresh on the
   // first authenticated call (api.js) covers the rest (AT-621).
+  //
+  // Concurrent restores share one in-flight refresh: refresh tokens rotate,
+  // so a second parallel POST would replay an already-rotated token and the
+  // server would correctly kill the whole session family as reuse (this
+  // bites under React StrictMode double-effects in dev).
   const restoreSession = useCallback(async () => {
-    try {
+    if (restoreInFlight !== null) {
+      try {
+        await restoreInFlight;
+        return true;
+      } catch {
+        return false;
+      }
+    }
+    restoreInFlight = (async () => {
       const res = await fetch(
         `${(import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080').replace(/\/+$/, '')}/api/auth/refresh`,
         { method: 'POST', credentials: 'include' }
       );
-      if (!res.ok) return false;
+      if (!res.ok) throw new Error('no session');
       const body = await res.json();
       setAccessToken(body.data.access_token);
       await refreshMe();
+    })();
+    try {
+      await restoreInFlight;
       return true;
     } catch {
       return false;
+    } finally {
+      restoreInFlight = null;
     }
   }, [refreshMe]);
 
@@ -73,6 +95,7 @@ export function AuthProvider({ children }) {
       // Logout is best-effort over the wire; local state always clears.
     } finally {
       clearAccessToken();
+      setLastOverride(null);
       setUser(null);
       setDutyState(null);
       setActiveGrants([]);
@@ -80,8 +103,8 @@ export function AuthProvider({ children }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, dutyState, activeGrants, loading, error, login, logout, refreshMe, restoreSession }),
-    [user, dutyState, activeGrants, loading, error, login, logout, refreshMe, restoreSession]
+    () => ({ user, dutyState, activeGrants, lastOverride, loading, error, login, logout, refreshMe, restoreSession, setLastOverride }),
+    [user, dutyState, activeGrants, lastOverride, loading, error, login, logout, refreshMe, restoreSession]
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

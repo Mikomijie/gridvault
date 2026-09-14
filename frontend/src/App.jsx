@@ -5,26 +5,31 @@ import { OfflineProvider } from './context/OfflineContext.jsx';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
+import PatientDossierPage from './pages/PatientDossierPage';
 
 // Route guards are UX only (AT-602): every route's data comes from an
 // endpoint that re-evaluates policy server-side.
 function RequireAuth({ children }) {
   const { user, loading, restoreSession } = useAuth();
-  const [restoring, setRestoring] = React.useState(true);
+  // Redirect only after the restore attempt finishes: otherwise the first
+  // render with user null navigates to /login while the refresh is still
+  // in flight, unmounting the guard before the session can land.
+  const [checked, setChecked] = React.useState(false);
   React.useEffect(() => {
-    let cancelled = false;
-    if (user === null && !loading) {
-      restoreSession().finally(() => {
-        if (!cancelled) setRestoring(false);
-      });
-    } else {
-      setRestoring(false);
+    if (loading) return undefined;
+    if (user !== null) {
+      setChecked(true);
+      return undefined;
     }
+    let cancelled = false;
+    restoreSession().finally(() => {
+      if (!cancelled) setChecked(true);
+    });
     return () => {
       cancelled = true;
     };
   }, [user, loading, restoreSession]);
-  if (loading || restoring) return null;
+  if (loading || !checked) return null;
   if (user === null) return <Navigate to="/login" replace />;
   return children;
 }
@@ -42,6 +47,14 @@ export default function App() {
             element={
               <RequireAuth>
                 <DashboardPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/dashboard/patient/:id"
+            element={
+              <RequireAuth>
+                <PatientDossierPage />
               </RequireAuth>
             }
           />

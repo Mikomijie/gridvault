@@ -59,5 +59,65 @@
     "queued": "queued",
     "syncNow": "Sync now",
     "lastSync": "Last sync"
+  },
+  "breakGlass": {
+    "codes": [
+      {
+        "code": "ACUTE_TRAUMA_UNCONSCIOUS",
+        "label": "Acute trauma, unconscious patient"
+      },
+      {
+        "code": "CARDIAC_ARREST_CODE_BLUE",
+        "label": "Cardiac arrest (code blue)"
+      },
+      {
+        "code": "SEVERE_SEPSIS_DECOMPENSATION",
+        "label": "Severe sepsis with decompensation"
+      },
+      {
+        "code": "OBSTETRIC_EMERGENCY",
+        "label": "Obstetric emergency"
+      },
+      {
+        "code": "PAEDIATRIC_EMERGENCY",
+        "label": "Paediatric emergency"
+      },
+      {
+        "code": "URGENT_SURGICAL_CONSULT",
+        "label": "Urgent surgical consult"
+      },
+      {
+        "code": "MASS_CASUALTY_TRIAGE",
+        "label": "Mass casualty triage"
+      },
+      {
+        "code": "OTHER",
+        "label": "Other (describe below)"
+      }
+    ],
+    "cancel": "Cancel",
+    "confirm": "Confirm emergency override",
+    "confirming": "Granting…"
+  },
+  "emergency": {
+    "active": "Emergency access active:",
+    "end": "End emergency access"
+  },
+  "dossier": {
+    "tabs": "Patient chart sections",
+    "tab_overview": "Overview",
+    "tab_vitals": "Vitals",
+    "tab_clinical": "Clinical",
+    "tab_protected": "Protected data",
+    "loading": "Loading chart…",
+    "loadError": "Could not load the chart. Check the connection and retry.",
+    "back": "Back to roster",
+    "deniedTitle": "Chart unavailable",
+    "deniedWard": "This patient is outside your assigned ward.",
+    "deniedQueue": "This patient is outside your intake queue.",
+    "deniedGeneric": "Access was denied by policy.",
+    "grantExpired": "The emergency grant has expired. A fresh override is required.",
+    "breakGlass": "Emergency Clinical Override",
+    "noVitals": "No vitals recorded."
   }
 }

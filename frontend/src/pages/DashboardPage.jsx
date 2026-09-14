@@ -769,6 +769,15 @@ export default function DashboardPage() {
                                 {en.dashboard.breakGlassOnly}
                               </div>
                             )}
+                            {!patient.masked && (
+                              <button
+                                type="button"
+                                onClick={() => navigate(`/dashboard/patient/${encodeURIComponent(patient.id)}`)}
+                                className="mt-2 inline-flex items-center gap-1 px-4 py-2 bg-[#005ea4] hover:bg-[#0077ce] text-white text-[12px] font-bold rounded-lg transition-colors whitespace-nowrap"
+                              >
+                                Open chart
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>

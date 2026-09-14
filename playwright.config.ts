@@ -15,7 +15,8 @@ export default defineConfig({
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: [
     {
-      command: 'mkdir -p data && npm run demo:reset && npx tsx backend/src/index.ts',
+      command:
+        'mkdir -p data && npm run demo:reset && npx tsx frontend/test/e2e/seed-extensions.ts && npx tsx backend/src/index.ts',
       port: 8080,
       reuseExistingServer: false,
       timeout: 120000,
