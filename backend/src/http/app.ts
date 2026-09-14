@@ -34,7 +34,7 @@ import { createHealthRouter } from './routes/health.js';
 import { createAdmissionsRouter, createHandoverRouter } from './routes/handover.js';
 import { createPatientsRouter } from './routes/patients.js';
 import { requireAuth } from './middleware/auth.js';
-import { securityHeaders } from './middleware/security.js';
+import { isAllowedOrigin, securityHeaders } from './middleware/security.js';
 import { logger } from '../observability/logger.js';
 import { recordDenial, recordRequest } from '../observability/metrics.js';
 import { AppError, toErrorBody } from './errors.js';
@@ -55,6 +55,7 @@ export interface AuthAppConfig {
   migrationsDir?: string | null;
   overrideTtlMinutes?: number;
   justifications?: string[];
+  corsAllowedOrigins?: string[];
 }
 
 export interface CreateAppOptions {
@@ -119,8 +120,26 @@ export function createApp(options: CreateAppOptions): express.Express {
   });
   const syncService = new SyncService({ db: options.db, clock: options.clock, timeZone: options.timeZone });
 
+  const corsAllowedOrigins = authConfig.corsAllowedOrigins ?? [];
   const app = express();
-  app.use(securityHeaders());
+  app.use(securityHeaders({ allowedOrigins: corsAllowedOrigins }));
+  // CORS preflight: JSON + Authorization make every mutating call
+  // preflighted. Allowed origins get a 204 with credential support;
+  // anything else falls through to 404 with no CORS headers (deny stays
+  // default). Placed before the JSON parser: OPTIONS carries no body.
+  app.use((req, res, next) => {
+    if (req.method !== 'OPTIONS' || !isAllowedOrigin(corsAllowedOrigins, req.headers.origin)) {
+      next();
+      return;
+    }
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin as string);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'content-type, authorization');
+    res.setHeader('Access-Control-Max-Age', '600');
+    res.setHeader('Vary', 'Origin');
+    res.status(204).end();
+  });
   app.use(express.json());
   app.use(cookieParser());
 

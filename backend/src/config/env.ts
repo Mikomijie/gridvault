@@ -46,6 +46,7 @@ const envSchema = z.object({
     .string()
     .default('false')
     .transform((v) => v.trim().toLowerCase() === 'true'),
+  CORS_ALLOWED_ORIGINS: z.string().default(''),
   RATE_LIMIT_LOGIN_ATTEMPTS: z.coerce.number().int().min(1).default(5),
   LOGIN_LOCKOUT_MINUTES: z.coerce.number().int().min(1).default(15),
   BACKUP_INTERVAL_HOURS: z.coerce.number().int().min(1).default(4),

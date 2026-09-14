@@ -261,4 +261,44 @@ describe('API branches: middleware, auth, patients, handover, health, audit', ()
     const foreign = await request(bare.app).get('/api/audit/logs').set('Authorization', `Bearer ${admin}`);
     expect(foreign.status).toBe(401);
   });
+
+  it('CORS echoes only configured origins with credentials, and answers preflight', async () => {
+    const stack = await createSeededStack(MORNING_CLOCK);
+    const corsApp = createApp({
+      db: stack.db,
+      clock: MORNING_CLOCK,
+      timeZone: TEST_TIME_ZONE,
+      auth: {
+        jwtSecret: TEST_JWT_SECRET,
+        demoMode: true,
+        masterKey: TEST_MASTER_KEY,
+        masterKeyLoaded: true,
+        corsAllowedOrigins: ['http://localhost:5173']
+      }
+    });
+
+    const allowed = await request(corsApp).get('/api/health/ping').set('Origin', 'http://localhost:5173');
+    expect(allowed.headers['access-control-allow-origin']).toBe('http://localhost:5173');
+    expect(allowed.headers['access-control-allow-credentials']).toBe('true');
+
+    const denied = await request(corsApp).get('/api/health/ping').set('Origin', 'https://evil.example');
+    expect(denied.headers['access-control-allow-origin']).toBeUndefined();
+
+    const preflight = await request(corsApp)
+      .options('/api/auth/login')
+      .set('Origin', 'http://localhost:5173')
+      .set('Access-Control-Request-Method', 'POST');
+    expect(preflight.status).toBe(204);
+    expect(preflight.headers['access-control-allow-origin']).toBe('http://localhost:5173');
+    expect(preflight.headers['access-control-allow-credentials']).toBe('true');
+
+    // Foreign origins fall through to Express's default OPTIONS reply:
+    // 200 with an Allow list but no CORS headers, so the browser still
+    // blocks the call. Deny is the absence of ACAO, not the status.
+    const foreignPreflight = await request(corsApp)
+      .options('/api/auth/login')
+      .set('Origin', 'https://evil.example');
+    expect(foreignPreflight.headers['access-control-allow-origin']).toBeUndefined();
+    expect(foreignPreflight.headers['access-control-allow-credentials']).toBeUndefined();
+  });
 });

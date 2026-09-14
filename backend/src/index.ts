@@ -92,6 +92,9 @@ const app = createApp({
     demoMode: config.DEMO_MODE,
     masterKey: config.masterKeyBytes,
     masterKeyLoaded: config.masterKeyBytes !== null,
+    corsAllowedOrigins: config.CORS_ALLOWED_ORIGINS.split(',')
+      .map((origin) => origin.trim())
+      .filter((origin) => origin.length > 0),
     migrationsDir: migrationsDir()
   }
 });

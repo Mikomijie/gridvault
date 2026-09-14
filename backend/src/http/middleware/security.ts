@@ -32,9 +32,17 @@ export function securityHeaders(options: SecurityHeadersOptions = {}) {
     }
     const origin = req.headers.origin;
     if (origin !== undefined && allowed.has(origin)) {
+      // Echo (never *): the refresh cookie requires credentials, and
+      // credentialed CORS forbids a wildcard origin.
       res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
       res.setHeader('Vary', 'Origin');
     }
     next();
   };
+}
+
+/** True when this request carries an explicitly allowed web origin. */
+export function isAllowedOrigin(allowedOrigins: string[], origin: unknown): origin is string {
+  return typeof origin === 'string' && new Set(allowedOrigins).has(origin);
 }
