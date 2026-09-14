@@ -86,9 +86,10 @@ export function dutyState(input: DutyStateInput): DutyState {
   if (inShift(minutes, window)) {
     return 'on_duty';
   }
-  if (minutesIntoGrace(minutes, window, input.graceMinutes) !== null) {
-    return 'handover_grace';
-  }
+  // Sanctioned extensions outrank grace (PRD 6.5 lists no grace exception):
+  // overtime cover is fully on duty, not read-only. This must precede the
+  // grace check — E2E caught grace shadowing a valid extension and turning
+  // legitimate writes into OFF_DUTY_WRITE.
   const atMs = input.at.getTime();
   for (const ext of input.extensions ?? []) {
     const start = Date.parse(ext.starts_at);
@@ -96,6 +97,9 @@ export function dutyState(input: DutyStateInput): DutyState {
     if (!Number.isNaN(start) && !Number.isNaN(end) && start <= atMs && atMs < end) {
       return 'on_duty';
     }
+  }
+  if (minutesIntoGrace(minutes, window, input.graceMinutes) !== null) {
+    return 'handover_grace';
   }
   return 'off_duty';
 }

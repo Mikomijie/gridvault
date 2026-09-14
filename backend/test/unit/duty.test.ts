@@ -44,6 +44,24 @@ describe('duty state (PRD 6.5)', () => {
     ).toBe('handover_grace');
   });
 
+  it('a scheduled extension outranks handover grace (overtime cover writes)', () => {
+    // Regression: grace used to shadow a valid extension, turning
+    // legitimate writes into OFF_DUTY_WRITE (caught by AT-503 E2E).
+    const instant = at('14:10:00');
+    expect(dutyState({ shift: 'morning', at: instant, timeZone: TZ, graceMinutes: GRACE })).toBe(
+      'handover_grace'
+    );
+    expect(
+      dutyState({
+        shift: 'morning',
+        at: instant,
+        timeZone: TZ,
+        graceMinutes: GRACE,
+        extensions: [{ starts_at: '2026-09-13T10:00:00Z', ends_at: '2026-09-13T20:00:00Z' }]
+      })
+    ).toBe('on_duty');
+  });
+
   it('AT-024 (unit): a scheduled extension keeps the subject on_duty outside shift hours', () => {
     const instant = at('03:00:00');
     expect(
