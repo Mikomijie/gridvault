@@ -532,6 +532,8 @@ export async function seedDatabase(
         ward: spec.ward,
         bed_number: spec.bed,
         status: spec.status,
+        status_source: 'auto',
+        status_set_by: null,
         admission_date: stamp,
         admitted_by: clerkUserId,
         version: 1,

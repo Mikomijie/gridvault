@@ -11,6 +11,7 @@
 // no endpoint anywhere that mutates the ledger.
 
 import { Router } from 'express';
+import { z } from 'zod';
 import type { GridVaultDatabase } from '../../db/connection.js';
 import type { Clock } from '../../clock.js';
 import { verifyLedger } from '../../ledger/verify.js';
@@ -22,6 +23,8 @@ import {
 } from '../../ledger/anchor.js';
 import { iterateExportLines } from '../../ledger/export.js';
 import { AppError } from '../errors.js';
+import { requireAuth, type AuthedRequest } from '../middleware/auth.js';
+import type { RecordsService } from '../../records/service.js';
 
 export interface AuditRouterOptions {
   db: GridVaultDatabase;
@@ -29,7 +32,17 @@ export interface AuditRouterOptions {
   timeZone?: string;
   /** Absent when the node has no signing key configured: anchor execution answers 503. */
   anchorConfig?: AnchorServiceConfig | null;
+  /** Absent only in bare ledger-only test apps; /logs answers 404 there. */
+  authenticator?: ReturnType<typeof requireAuth>;
+  service?: RecordsService;
 }
+
+const logsQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(200).optional(),
+  staff_id: z.string().min(1).max(64).optional(),
+  patient_id: z.string().min(1).max(128).optional(),
+  action: z.string().min(1).max(64).optional()
+});
 
 export function createAuditRouter(options: AuditRouterOptions): Router {
   const router = Router();
@@ -38,6 +51,34 @@ export function createAuditRouter(options: AuditRouterOptions): Router {
   router.get('/verify', (_req, res) => {
     res.json(verifyLedger(options.db));
   });
+
+  // Ledger inspection (PRD 12.5): admin/CMO read everything, doctors read
+  // own-ward events, nurses and clerks get 403 (AT-107..109).
+  const logsHandler = (req: AuthedRequest, res: { status: (code: number) => { json: (body: unknown) => void } }, next: (error: unknown) => void): void => {
+    if (options.service === undefined) {
+      next(new AppError({ code: 'NOT_FOUND', httpStatus: 404, message: 'Unknown endpoint' }));
+      return;
+    }
+    const parsed = logsQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      next(new AppError({ code: 'INVALID_BODY', httpStatus: 400, message: 'The query is malformed' }));
+      return;
+    }
+    try {
+      res.status(200).json(options.service.ledgerLogs(req.auth, parsed.data));
+    } catch (error) {
+      next(error);
+    }
+  };
+  if (options.authenticator !== undefined) {
+    router.get('/logs', options.authenticator, (req, res, next) => {
+      logsHandler(req as AuthedRequest, res, next);
+    });
+  } else {
+    router.get('/logs', (req, res, next) => {
+      logsHandler(req as AuthedRequest, res, next);
+    });
+  }
 
   router.get('/anchors', (_req, res) => {
     res.json(getAnchorHistory(options.db));

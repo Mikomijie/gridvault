@@ -40,16 +40,17 @@ describe('data layer and crypto acceptance', () => {
     const db = openTestDb();
     try {
       const first = migrateTestDb(db);
-      expect(first.applied).toEqual([1, 2]);
+      expect(first.applied).toEqual([1, 2, 3]);
       const second = migrateTestDb(db);
       expect(second.applied).toEqual([]);
       const rows = db
         .prepare('SELECT version, name, checksum FROM schema_migrations ORDER BY version ASC')
         .all() as Array<{ version: number; name: string; checksum: string }>;
-      expect(rows).toHaveLength(2);
+      expect(rows).toHaveLength(3);
       expect(rows.map((row) => [row.version, row.name])).toEqual([
         [1, 'init'],
-        [2, 'anchor_facility']
+        [2, 'anchor_facility'],
+        [3, 'status_source']
       ]);
       for (const row of rows) {
         const filename = `${String(row.version).padStart(3, '0')}_${row.name}.sql`;
@@ -67,7 +68,7 @@ describe('data layer and crypto acceptance', () => {
     cpSync(MIGRATIONS_DIR, dir, { recursive: true });
     const db = openTestDb();
     try {
-      expect(migrate(db, { migrationsDir: dir, clock: TEST_CLOCK }).applied).toEqual([1, 2]);
+      expect(migrate(db, { migrationsDir: dir, clock: TEST_CLOCK }).applied).toEqual([1, 2, 3]);
       appendFileSync(path.join(dir, '001_init.sql'), '\n-- attacker edit\n');
       let thrown: unknown;
       try {

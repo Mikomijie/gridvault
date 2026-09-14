@@ -14,6 +14,9 @@ export interface PatientRow {
   ward: string;
   bed_number: string;
   status: PatientStatus;
+  /** 'auto' (triage derivation) or 'manual' (clinician override). Migration 003. */
+  status_source: 'auto' | 'manual';
+  status_set_by: string | null;
   admission_date: string;
   admitted_by: string | null;
   version: number;

@@ -50,14 +50,10 @@ export function wallMinutesAt(at: Date, timeZone: string): number {
     minute: '2-digit',
     hourCycle: 'h23'
   }).formatToParts(at);
-  const get = (type: string): number => {
-    const part = parts.find((p) => p.type === type);
-    if (part === undefined) {
-      throw new Error(`Missing time part: ${type}`);
-    }
-    return Number(part.value);
-  };
-  return get('hour') * 60 + get('minute');
+  // No defensive lookup branch: a missing part yields NaN, which fails every
+  // shift comparison below and lands fail-closed on off_duty.
+  const lookup = new Map(parts.map((part) => [part.type, part.value]));
+  return Number(lookup.get('hour')) * 60 + Number(lookup.get('minute'));
 }
 
 function inShift(minutes: number, window: ShiftWindow): boolean {

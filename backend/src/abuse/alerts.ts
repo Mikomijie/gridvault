@@ -43,7 +43,9 @@ export function raiseAbuseAlert(
   const clock = options.clock ?? systemClock;
   const timeZone = options.timeZone ?? 'Africa/Lagos';
   const at = formatIsoWithOffset(clock.now(), timeZone);
-  const alertId = `al_${uuidv7().replace(/-/g, '').slice(0, 20)}`;
+  // Full UUIDv7 hex: a sliced prefix would collide for alerts raised in the
+  // same millisecond (two denials in one burst must not 500 on the PK).
+  const alertId = `al_${uuidv7().replace(/-/g, '')}`;
 
   const write = db.transaction(() => {
     const ledger = appendLedgerEntry(

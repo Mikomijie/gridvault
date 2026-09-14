@@ -19,10 +19,15 @@ import type { GridVaultDatabase } from '../db/connection.js';
 import type { Clock } from '../clock.js';
 import { AuthService } from '../auth/service.js';
 import { IpRateLimiter } from '../auth/rate-limit.js';
+import { FieldCrypto } from '../crypto/field-encryption.js';
+import { SqliteRecordSource } from '../records/source.js';
+import { RecordsService } from '../records/service.js';
 import type { AnchorServiceConfig } from '../ledger/anchor.js';
 import { createAuditRouter } from './routes/audit.js';
 import { createAuthRouter } from './routes/auth.js';
 import { createHealthRouter } from './routes/health.js';
+import { createAdmissionsRouter, createHandoverRouter } from './routes/handover.js';
+import { createPatientsRouter } from './routes/patients.js';
 import { requireAuth } from './middleware/auth.js';
 import { securityHeaders } from './middleware/security.js';
 import { AppError, toErrorBody } from './errors.js';
@@ -38,6 +43,7 @@ export interface AuthAppConfig {
   lockoutMinutes?: number;
   shiftGraceMinutes?: number;
   demoMode?: boolean;
+  masterKey?: Uint8Array | null;
   masterKeyLoaded?: boolean;
   migrationsDir?: string | null;
 }
@@ -79,6 +85,19 @@ export function createApp(options: CreateAppOptions): express.Express {
     shiftGraceMinutes
   });
 
+  // Field decryption is available only when the node holds the master key;
+  // reads that do not need decryption work without it, and anything that
+  // does fails closed with ENCRYPTION_UNAVAILABLE (fail loudly, §2.7).
+  const masterKey = authConfig.masterKey ?? null;
+  const recordsService = new RecordsService({
+    db: options.db,
+    source: new SqliteRecordSource(options.db),
+    crypto: masterKey === null ? null : new FieldCrypto(masterKey),
+    clock: options.clock,
+    timeZone: options.timeZone,
+    shiftGraceMinutes
+  });
+
   const app = express();
   app.use(securityHeaders());
   app.use(express.json());
@@ -112,9 +131,15 @@ export function createApp(options: CreateAppOptions): express.Express {
       db: options.db,
       clock: options.clock,
       timeZone: options.timeZone,
-      anchorConfig: options.anchorConfig ?? null
+      anchorConfig: options.anchorConfig ?? null,
+      authenticator,
+      service: recordsService
     })
   );
+
+  app.use('/api/patients', createPatientsRouter({ service: recordsService, authenticator }));
+  app.use('/api/handover', createHandoverRouter({ service: recordsService, authenticator }));
+  app.use('/api/admissions', createAdmissionsRouter({ service: recordsService, authenticator }));
 
   app.use((_req, res) => {
     res.status(404).json({

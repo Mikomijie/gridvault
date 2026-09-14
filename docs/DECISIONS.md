@@ -44,6 +44,24 @@ This document records architectural, design, and operational decisions where AGE
 
 ---
 
+### 2026-09-14 — Phase 4: Policy Engine, Redaction, Records API, AT-101..AT-119
+
+- **Context:** AGENTS.md §7 P4 requires the single `decide()` implementing PRD §6.1 in order with 100% branch coverage, duty-driven access, serializer-side redaction, the full PRD §12.3 surface and the `RecordSource` abstraction. Acceptance tests win over prose where they conflict (precedence rule).
+- **Decision:**
+  1. Step 7 (ward isolation) binds doctor/nurse only. An in-queue clerk read (AT-103, 200) and an admin read (AT-106, 200 with restrictions) force the exemption: clerks are bound by the intake queue, admins by group-level denial.
+  2. Step 10 (`SENSITIVE_CLINICIAN_ONLY`) deleted. For the five spec'd roles it is subsumed by steps 4 and 6 on every path, leaving an uncoverable branch that would fail the NFR-10 100% policy gate; the failure playbook orders deletion of genuinely unreachable branches. Reintroduce if a sixth role is added.
+  3. Clerk 403-vs-404: out-of-queue reads in a ward the clerk can enumerate (own ward + queue wards) are 403 `CLERK_OUT_OF_QUEUE` (AT-104, judge step 4); elsewhere 404 (AT-113, PRD §12.1). Both are logged and alerted identically.
+  4. `VITALS` counts as clinical content for the clerk rule (step 4 denies VITALS/CLINICAL/SENSITIVE with `CLERK_NO_CLINICAL`); matrix "—" for clerk vitals.
+  5. Admin/CMO read `DEMOGRAPHICS` as id+ward only (service projection + per-field redactions); `VITALS`/`LOGISTICS` redact silently while `CLINICAL`/`SENSITIVE` requests raise `RULE-ABUSE-05` (AT-106 "explicit sensitive request").
+  6. Break-glass scope (PRD §7.4): readable all five groups, writable VITALS+CLINICAL, SENSITIVE read-only (writes denied `ROLE_CANNOT_WRITE`); the top-level decision reason under a grant is `EMERGENCY_GRANT`.
+  7. Grace-window boundary is open on the left (exactly at shift end the subject is `off_duty`), pinning AT-020 (06:00 off) against AT-021 (14:15 grace).
+  8. `patients.version` is the demographics OCC token only; vitals/notes/MAR writes change status but not version. Migration 003 adds `status_source`/`status_set_by` so auto-triage never overwrites a manual status (PRD §12.7).
+  9. Version conflicts (409) queue a charge-nurse reconciliation task in `notification_outbox` (no reconciliation table exists in the PRD §11 schema).
+  10. Sliced UUIDv7 prefixes (`slice(0, 20)`) collide within one millisecond — replaced with full UUID hex for alert and decision ids (found via AT-119).
+  11. MAR sign-off and note appends use the `append` action (doctor+nurse on CLINICAL); handover requires a clinical role in the requested ward; the admissions queue adds reason code `QUEUE_ACCESS_DENIED`.
+  12. AT-008/AT-009 expectations extended from `[1, 2]` to `[1, 2, 3]` for migration 003; assertions unchanged.
+- **Gates at commit time:** `npm test` 105/105, `npm run lint` 0 errors, `tsc` clean, `decide.ts` + `duty.ts` 100% statements/branches/functions/lines.
+
 ### 2026-09-13 — Phase 2: Tamper-Evident Ledger, Anchor Witness, and AT-301..AT-315
 
 - **Context:** AGENTS.md §7 P2 requires the append path, streaming verifier, Ed25519-anchored witness, JSONL export with standalone file verification, and the `demo:tamper` CLI, proven by acceptance tests AT-301..AT-315.

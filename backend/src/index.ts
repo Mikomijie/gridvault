@@ -68,6 +68,7 @@ const app = createApp({
     lockoutMinutes: config.LOGIN_LOCKOUT_MINUTES,
     shiftGraceMinutes: config.SHIFT_GRACE_MINUTES,
     demoMode: config.DEMO_MODE,
+    masterKey: config.masterKeyBytes,
     masterKeyLoaded: config.masterKeyBytes !== null,
     migrationsDir: migrationsDir()
   }

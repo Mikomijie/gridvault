@@ -36,6 +36,7 @@ export function createTestStack(clock: Clock = TEST_CLOCK): TestStack {
     auth: {
       jwtSecret: TEST_JWT_SECRET,
       demoMode: true,
+      masterKey: TEST_MASTER_KEY,
       masterKeyLoaded: true
     }
   });

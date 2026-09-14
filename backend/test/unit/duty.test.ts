@@ -35,6 +35,15 @@ describe('duty state (PRD 6.5)', () => {
     ).toBe('off_duty');
   });
 
+  it('a zero grace window leaves the subject off_duty immediately after shift end', () => {
+    expect(
+      dutyState({ shift: 'morning', at: at('14:15:00'), timeZone: TZ, graceMinutes: 0 })
+    ).toBe('off_duty');
+    expect(
+      dutyState({ shift: 'morning', at: at('14:15:00'), timeZone: TZ, graceMinutes: 30 })
+    ).toBe('handover_grace');
+  });
+
   it('AT-024 (unit): a scheduled extension keeps the subject on_duty outside shift hours', () => {
     const instant = at('03:00:00');
     expect(

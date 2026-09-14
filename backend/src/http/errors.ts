@@ -10,6 +10,7 @@ export class AppError extends Error {
   readonly httpStatus: number;
   readonly reasonCode: string | null;
   readonly details: Record<string, string | number | boolean | null>;
+  readonly canBreakGlass: boolean;
 
   constructor(input: {
     code: string;
@@ -17,6 +18,7 @@ export class AppError extends Error {
     message: string;
     reasonCode?: string;
     details?: Record<string, string | number | boolean | null>;
+    canBreakGlass?: boolean;
   }) {
     super(input.message);
     this.name = 'AppError';
@@ -24,6 +26,7 @@ export class AppError extends Error {
     this.httpStatus = input.httpStatus;
     this.reasonCode = input.reasonCode ?? null;
     this.details = input.details ?? {};
+    this.canBreakGlass = input.canBreakGlass ?? false;
   }
 }
 
@@ -34,6 +37,7 @@ export function toErrorBody(error: AppError, requestId: string): {
     reason_code: string | null;
     details: Record<string, string | number | boolean | null>;
     request_id: string;
+    can_break_glass: boolean;
   };
 } {
   return {
@@ -42,7 +46,8 @@ export function toErrorBody(error: AppError, requestId: string): {
       message: error.message,
       reason_code: error.reasonCode,
       details: error.details,
-      request_id: requestId
+      request_id: requestId,
+      can_break_glass: error.canBreakGlass
     }
   };
 }
