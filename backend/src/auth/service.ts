@@ -23,6 +23,8 @@ import { emergencyOverridesRepository } from '../db/repositories/overrides.js';
 import { AppError } from '../http/errors.js';
 import { dutyState, type DutyState } from '../policy/duty.js';
 import { raiseAbuseAlert } from '../abuse/alerts.js';
+import { shouldLockout } from '../abuse/rules/rule08-credential-stuffing.js';
+import { isReuseOfRotatedToken } from '../abuse/rules/rule09-refresh-reuse.js';
 import { IpRateLimiter, LOGIN_RATE_LIMIT_WINDOW_MS } from './rate-limit.js';
 import { verifySecret } from './password.js';
 import { hashRefreshToken, newRefreshToken, signAccessToken } from './tokens.js';
@@ -232,7 +234,7 @@ export class AuthService {
         this.ipLimiter.recordFailure(sourceIp, now.getTime());
       }
       const failures = user.failed_attempts + 1;
-      const locked = failures >= this.maxAttempts;
+      const locked = shouldLockout(failures, this.maxAttempts);
       const lockedUntil = locked
         ? this.stamp(new Date(now.getTime() + this.lockoutMinutes * 60000))
         : null;
@@ -375,7 +377,7 @@ export class AuthService {
       });
     }
     if (row.revoked_at !== null) {
-      if (row.revoked_reason === 'rotated') {
+      if (isReuseOfRotatedToken(row.revoked_reason)) {
         // Reuse of a rotated token: the family is compromised. Kill it and
         // raise RULE-ABUSE-09 CRITICAL (AT-019).
         const kill = this.db.transaction(() => {

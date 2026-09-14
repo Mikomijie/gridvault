@@ -22,6 +22,8 @@ import { emergencyOverridesRepository, type EmergencyOverrideRow } from '../db/r
 import { patientsRepository } from '../db/repositories/patients.js';
 import { AppError } from '../http/errors.js';
 import { raiseAbuseAlert } from '../abuse/alerts.js';
+import { loadAbuseRules } from '../abuse/config.js';
+import { isFrequencySpike } from '../abuse/rules/rule04-breakglass-spike.js';
 import { verifySecret } from '../auth/password.js';
 import { queueOutbox, type NotifyDriver, LocalLogDriver } from '../notify/outbox.js';
 import type { AuthenticatedSubject, RequestMeta } from '../auth/service.js';
@@ -125,11 +127,14 @@ export interface OverrideServiceOptions {
   otherMinNotes?: number;
   pinThrottle?: OverridePinThrottle;
   driver?: NotifyDriver;
+  /** RULE-ABUSE-04 threshold: grants in-window that constitute a spike. */
+  frequencyThresholdCount?: number;
+  /** RULE-ABUSE-04 window, minutes. Both default to abuse-rules.json. */
+  frequencyWindowMinutes?: number;
 }
 
 const GRANT_READABLE = ['DEMOGRAPHICS', 'LOGISTICS', 'VITALS', 'CLINICAL', 'SENSITIVE'];
 const GRANT_WRITABLE = ['VITALS', 'CLINICAL'];
-const FREQUENCY_WINDOW_MINUTES = 60;
 
 export class OverrideService {
   private readonly db: GridVaultDatabase;
@@ -140,6 +145,8 @@ export class OverrideService {
   private readonly otherMinNotes: number;
   private readonly pinThrottle: OverridePinThrottle;
   private readonly driver: NotifyDriver;
+  private readonly frequencyThresholdCount: number;
+  private readonly frequencyWindowMinutes: number;
 
   constructor(options: OverrideServiceOptions) {
     this.db = options.db;
@@ -151,6 +158,13 @@ export class OverrideService {
     this.pinThrottle = options.pinThrottle ?? new OverridePinThrottle();
     this.driver = options.driver ?? new LocalLogDriver();
     void this.driver;
+    // Thresholds come from the same validated config the engine uses, so a
+    // facility tuning abuse-rules.json retunes the grant writer too.
+    const abuseRules = loadAbuseRules();
+    this.frequencyThresholdCount =
+      options.frequencyThresholdCount ?? abuseRules.break_glass_frequency_count;
+    this.frequencyWindowMinutes =
+      options.frequencyWindowMinutes ?? abuseRules.break_glass_frequency_window_minutes;
   }
 
   private stamp(at: Date = this.clock.now()): string {
@@ -238,11 +252,13 @@ export class OverrideService {
     const chargeNurse = `charge_nurse:${patient.ward}`;
     // Frequency spike (RULE-ABUSE-04): care first — the grant succeeds and
     // the alert plus escalated dispatch ride along.
-    const windowStart = new Date(now.getTime() - FREQUENCY_WINDOW_MINUTES * 60000).toISOString();
+    const windowStart = new Date(
+      now.getTime() - this.frequencyWindowMinutes * 60000
+    ).toISOString();
     const recentRow = this.db
       .prepare('SELECT COUNT(*) AS n FROM emergency_overrides WHERE staff_id = ? AND granted_at > ?')
       .get(auth.user.staff_id, windowStart) as { n: number };
-    const frequencySpike = recentRow.n >= 1;
+    const frequencySpike = isFrequencySpike(recentRow.n, this.frequencyThresholdCount);
 
     const run = this.db.transaction(() => {
       appendLedgerEntry(
@@ -346,7 +362,7 @@ export class OverrideService {
             patient_id: patient.id,
             rule_triggered: 'RULE-ABUSE-04',
             severity: 'CRITICAL',
-            facts: { override_id: overrideId, window_minutes: FREQUENCY_WINDOW_MINUTES },
+            facts: { override_id: overrideId, window_minutes: this.frequencyWindowMinutes },
             decision_id: null,
             session_id: auth.sessionId,
             terminal_id: terminalId,

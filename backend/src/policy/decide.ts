@@ -36,6 +36,7 @@ import {
   type PatientGroup
 } from './field-groups.js';
 import type { PolicyReason } from './reasons.js';
+import { isClerkProbe } from '../abuse/rules/rule01-clerk-probe.js';
 
 export type PolicyEffect = 'ALLOW' | 'DENY';
 export type PolicyAction = 'read' | 'write' | 'append';
@@ -301,8 +302,19 @@ export function decide(
   }
   // Step 5 — clerk outside the intake queue. Enumerable wards get an
   // explicit 403; anywhere else the patient is not enumerable to this
-  // subject and the answer is 404 (PRD 12.1).
-  if (subject.role === 'clerk' && !context.inIntakeQueue) {
+  // subject and the answer is 404 (PRD 12.1). The gate is the RULE-ABUSE-01
+  // predicate itself (arm 1: out-of-queue probe); arm 2 (in-queue clinical
+  // request) stays redact-only at step 4 by design — dossier reads request
+  // every group, so alerting there would fire CRITICAL on legitimate work.
+  if (
+    subject.role === 'clerk' &&
+    !context.inIntakeQueue &&
+    isClerkProbe({
+      role: subject.role,
+      inIntakeQueue: context.inIntakeQueue,
+      requested: context.requested
+    })
+  ) {
     const enumerable = context.clerkKnownWards.includes(resource.ward);
     const obligations: Obligation[] = [
       auditObligation(),
