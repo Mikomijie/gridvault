@@ -35,3 +35,15 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: End-to-end tests
+        run: npm run test:e2e
+
+      - name: Dependency audit
+        run: npm audit --omit=dev
+
+      - name: Coverage gate
+        run: npm run test:coverage

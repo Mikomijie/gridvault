@@ -4,22 +4,51 @@ import en from '../i18n/en.json';
 /**
  * BreakGlassModal (P8, AT-204/608). Consequence first, then justification,
  * then PIN, then a single red confirm: two interactions after the opening
- * button. Escape cancels. A live region announces the grant to screen
- * readers (AT-619). Nothing here grants anything — POST /override/execute
- * decides server-side.
+ * button. Escape cancels and Tab/Shift+Tab are trapped inside the dialog
+ * (AT-619). The grant itself is announced by EmergencyBanner's role="alert"
+ * once it mounts, not from here — the caller closes this modal as soon as
+ * the request succeeds, so anything this component set after that await
+ * would be applied to an already-unmounted instance. Nothing here grants
+ * anything — POST /override/execute decides server-side.
  */
 export default function BreakGlassModal({ hospitalNumber, onConfirm, onCancel, confirming, serverError }) {
   const [code, setCode] = useState('ACUTE_TRAUMA_UNCONSCIOUS');
   const [notes, setNotes] = useState('');
   const [pin, setPin] = useState('');
-  const [announcement, setAnnouncement] = useState('');
   const dialogRef = useRef(null);
-  const confirmRef = useRef(null);
+
+  const getFocusable = () => {
+    if (dialogRef.current === null) return [];
+    return Array.from(
+      dialogRef.current.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+    ).filter((el) => !el.disabled);
+  };
 
   useEffect(() => {
-    confirmRef.current?.focus();
+    // The confirm button starts disabled (no PIN yet), and a disabled
+    // element cannot receive focus — autofocus the first real field
+    // instead so the trap always has a valid starting point.
+    getFocusable()[0]?.focus();
     const onKey = (event) => {
-      if (event.key === 'Escape') onCancel();
+      if (event.key === 'Escape') {
+        onCancel();
+        return;
+      }
+      // Focus trap (AT-619): Tab/Shift+Tab cycle within the dialog only —
+      // a screen-reader or keyboard user must never land on the roster
+      // behind the scrim while emergency access is being decided.
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
@@ -32,14 +61,9 @@ export default function BreakGlassModal({ hospitalNumber, onConfirm, onCancel, c
   const submit = async (event) => {
     event.preventDefault();
     if (!canConfirm) return;
-    setAnnouncement('');
-    try {
-      const result = await onConfirm({ justification_code: code, justification_notes: notes.trim() || null, pin });
-      setAnnouncement(`Emergency access granted. Audit entry ${result.audit_index}.`);
-    } catch {
-      // Server error text renders below; the announcement stays silent so
-      // a wrong PIN is not broadcast to the room.
-    }
+    // Errors are surfaced by the caller re-rendering this modal with
+    // `serverError`; a rejection here needs no local handling.
+    await onConfirm({ justification_code: code, justification_notes: notes.trim() || null, pin }).catch(() => undefined);
   };
 
   return (
@@ -62,10 +86,6 @@ export default function BreakGlassModal({ hospitalNumber, onConfirm, onCancel, c
           normal access and immediately notifies the CMO and the charge nurse. The grant is
           scoped to this patient for 60 minutes and written to the tamper-evident audit log.
         </p>
-        <div aria-live="polite" className="sr-only">
-          {announcement}
-        </div>
-
         <label className="mt-4 block text-[12px] font-bold text-[#131b2e]" htmlFor="bg-reason">
           Clinical justification
         </label>
@@ -126,7 +146,6 @@ export default function BreakGlassModal({ hospitalNumber, onConfirm, onCancel, c
           </button>
           <button
             type="submit"
-            ref={confirmRef}
             disabled={!canConfirm}
             className="rounded-lg bg-[#b6171e] px-5 py-2 text-[14px] font-bold text-white disabled:opacity-50"
           >

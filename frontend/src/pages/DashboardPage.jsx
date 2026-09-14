@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { api } from '../lib/api.js';
+import { cacheRoster, getCachedRoster } from '../lib/cache.js';
 import OfflineBar from '../components/OfflineBar.jsx';
 import en from '../i18n/en.json';
 
@@ -393,15 +394,31 @@ export default function DashboardPage() {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
+  const [fromCache, setFromCache] = useState(false);
+
+  // Cold-boot offline fallback (AT-623): the service worker answers the
+  // shell request, this cache answers the data. Scoped to role+ward so one
+  // terminal's cache never leaks a different principal's roster.
+  const cacheKey = user ? `${user.role}:${user.ward ?? 'none'}` : null;
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         const res = await api.roster();
-        if (!cancelled) setPatients(res.data ?? []);
+        if (cancelled) return;
+        setPatients(res.data ?? []);
+        setFromCache(false);
+        if (cacheKey) cacheRoster(cacheKey, res.data ?? []).catch(() => undefined);
       } catch (err) {
-        if (!cancelled) setLoadError(err.message ?? en.dashboard.loadError);
+        if (cancelled) return;
+        const cached = cacheKey ? await getCachedRoster(cacheKey) : null;
+        if (cached !== null) {
+          setPatients(cached);
+          setFromCache(true);
+        } else {
+          setLoadError(err.message ?? en.dashboard.loadError);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -409,7 +426,7 @@ export default function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [cacheKey]);
 
   const reload = async () => {
     setLoading(true);
@@ -417,6 +434,8 @@ export default function DashboardPage() {
     try {
       const res = await api.roster();
       setPatients(res.data ?? []);
+      setFromCache(false);
+      if (cacheKey) cacheRoster(cacheKey, res.data ?? []).catch(() => undefined);
     } catch (err) {
       setLoadError(err.message ?? en.dashboard.loadError);
     } finally {
@@ -719,6 +738,12 @@ export default function DashboardPage() {
                   {user?.ward ?? ''}
                 </div>
               </div>
+
+              {fromCache && (
+                <p className="mb-3 rounded-lg bg-[#fff3cd] px-3 py-2 text-[12px] font-semibold text-[#7a5b00]">
+                  {en.offlineShell.cachedNotice}
+                </p>
+              )}
 
               <div className="flex flex-col gap-4" aria-live="polite">
                 {loading ? (

@@ -15,7 +15,8 @@ export interface WardRouterOptions {
 }
 
 const handoverQuerySchema = z.object({
-  ward: z.string().min(1).max(64)
+  ward: z.string().min(1).max(64),
+  terminal_id: z.string().min(1).max(128).optional()
 });
 
 export function createHandoverRouter(options: WardRouterOptions): Router {
@@ -33,7 +34,10 @@ export function createHandoverRouter(options: WardRouterOptions): Router {
       res
         .status(200)
         .json(
-          options.service.handover(authed.auth, parsed.data.ward, { terminal_id: null, source_ip: ip })
+          options.service.handover(authed.auth, parsed.data.ward, {
+            terminal_id: parsed.data.terminal_id ?? null,
+            source_ip: ip
+          })
         );
     } catch (error) {
       next(error);

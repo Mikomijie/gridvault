@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { OfflineProvider } from './context/OfflineContext.jsx';
 import { LockProvider } from './context/LockContext.jsx';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
@@ -39,6 +40,7 @@ function RequireAuth({ children }) {
 
 export default function App() {
   return (
+    <ErrorBoundary>
     <AuthProvider>
       <OfflineProvider>
       <Router>
@@ -84,5 +86,6 @@ export default function App() {
       </Router>
       </OfflineProvider>
     </AuthProvider>
+    </ErrorBoundary>
   );
 }

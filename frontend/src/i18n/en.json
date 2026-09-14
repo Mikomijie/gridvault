@@ -168,5 +168,13 @@
     "loadError": "Could not load the handover sheet.",
     "generated": "Generated",
     "ward": "Ward"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "body": "GridVault hit an unexpected error and stopped this screen to avoid showing incorrect data. No chart content was lost.",
+    "retry": "Reload"
+  },
+  "offlineShell": {
+    "cachedNotice": "Showing the last cached roster while offline."
   }
 }

@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { api, clearAccessToken, setAccessToken } from '../lib/api.js';
+import { clearRosterCache } from '../lib/cache.js';
 import en from '../i18n/en.json';
 
 const AuthContext = createContext(null);
@@ -95,6 +96,7 @@ export function AuthProvider({ children }) {
       // Logout is best-effort over the wire; local state always clears.
     } finally {
       clearAccessToken();
+      clearRosterCache().catch(() => undefined);
       setLastOverride(null);
       setUser(null);
       setDutyState(null);

@@ -73,3 +73,49 @@ test('AT-608/AT-609: doctor break-glass opens the chart, then End re-locks it', 
   await page.goto('/dashboard/patient/HOSP-LOS-2025-081');
   await expect(page.getByText(/Chart unavailable|WARD_MISMATCH/i).first()).toBeVisible({ timeout: 15000 });
 });
+
+test('AT-619: break-glass modal traps focus, is labelled, and announces the grant', async ({ page }) => {
+  await login(page, 'GV-9042');
+  await page.goto('/dashboard/patient/HOSP-LOS-2025-081');
+  await expect(page.getByText(/WARD_MISMATCH/i)).toBeVisible({ timeout: 15000 });
+  await page.getByRole('button', { name: /Emergency Clinical Override/i }).click();
+
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toHaveAttribute('aria-labelledby', 'breakglass-title');
+  await expect(dialog).toHaveAttribute('aria-modal', 'true');
+
+  // Confirm starts disabled (no PIN yet) so focus opens on the first real
+  // field. Tabbing forward through every field must wrap back to the
+  // first, never escaping to the roster behind the scrim; Shift+Tab from
+  // the first must wrap to the last enabled control (Cancel, since Confirm
+  // is still disabled).
+  const reasonField = page.getByLabel(/Clinical justification/i);
+  const cancelButton = page.getByRole('button', { name: /^Cancel$/i });
+  await expect(reasonField).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(cancelButton).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(reasonField).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.getByLabel(/Confirm with your PIN/i)).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(cancelButton).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(reasonField).toBeFocused();
+
+  await page.getByLabel(/Confirm with your PIN/i).fill('220042');
+  await page.getByRole('button', { name: /Confirm emergency override/i }).click();
+  // The grant is announced by EmergencyBanner's own role="alert" region,
+  // which replaces the modal in the DOM the instant the grant succeeds.
+  await expect(dialog).toHaveCount(0, { timeout: 15000 });
+  const banner = page.getByRole('alert').first();
+  await expect(banner).toContainText(/Emergency access active/i);
+  await expect(banner).toContainText(/audit \d+/i);
+
+  // Close the grant: the seeded DB is shared across the whole suite run,
+  // and a lingering ACTIVE override for GV-9042/HOSP-LOS-2025-081 would
+  // turn AT-627's expected WARD_MISMATCH into a 200 for every later spec.
+  await page.getByRole('button', { name: /End emergency access/i }).click();
+  await expect(banner).toHaveCount(0);
+});

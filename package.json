@@ -28,7 +28,8 @@
     "gv": "tsx backend/src/cli/gv.ts",
     "demo:reset": "tsx backend/src/cli/gv.ts demo:reset",
     "demo:tamper": "tsx backend/src/cli/gv.ts demo:tamper",
-    "judge": "tsx scripts/judge.ts"
+    "judge": "tsx scripts/judge.ts",
+    "load-test": "tsx scripts/load-test.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
