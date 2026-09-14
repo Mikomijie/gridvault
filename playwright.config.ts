@@ -6,6 +6,9 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './frontend/test/e2e',
   fullyParallel: false,
+  // One worker, alphabetical files: the AT-612 tamper runs last and the
+  // next run reseeds, so no spec observes another spec's corruption.
+  workers: 1,
   retries: 0,
   reporter: 'list',
   use: {

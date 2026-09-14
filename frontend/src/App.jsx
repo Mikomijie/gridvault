@@ -6,6 +6,7 @@ import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import PatientDossierPage from './pages/PatientDossierPage';
+import SecurityPage from './pages/SecurityPage';
 
 // Route guards are UX only (AT-602): every route's data comes from an
 // endpoint that re-evaluates policy server-side.
@@ -55,6 +56,14 @@ export default function App() {
             element={
               <RequireAuth>
                 <PatientDossierPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/dashboard/security"
+            element={
+              <RequireAuth>
+                <SecurityPage />
               </RequireAuth>
             }
           />

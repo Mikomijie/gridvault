@@ -107,10 +107,19 @@ export const api = {
     apiFetch(`/api/patients/${encodeURIComponent(hospitalNumber)}/vitals`, { method: 'POST', body: vitals }),
   overrideExecute: (input) => apiFetch('/api/override/execute', { method: 'POST', body: input }),
   overrideActive: () => apiFetch('/api/override/active'),
+  abuseDemo: () => apiFetch('/api/abuse/demo/clerk-probe', { method: 'POST' }),
+  overrideQueue: (state) =>
+    apiFetch(`/api/override${state ? `?state=${encodeURIComponent(state)}` : ''}`),
+  overrideReview: (id, decision, notes) =>
+    apiFetch(`/api/override/${encodeURIComponent(id)}/review`, { method: 'POST', body: { decision, notes } }),
   syncBatch: (mutations) => apiFetch('/api/sync/batch', { method: 'POST', body: { mutations } }),
   syncBackfill: (slips) => apiFetch('/api/sync/backfill', { method: 'POST', body: { slips } }),
   overrideClose: (id) => apiFetch(`/api/override/${encodeURIComponent(id)}/close`, { method: 'POST' }),
   auditVerify: () => apiFetch('/api/audit/verify'),
+  auditLogs: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return apiFetch(`/api/audit/logs${query.length > 0 ? `?${query}` : ''}`);
+  },
   abuseAlerts: (params = {}) => {
     const query = new URLSearchParams(params).toString();
     return apiFetch(`/api/abuse/alerts${query.length > 0 ? `?${query}` : ''}`);

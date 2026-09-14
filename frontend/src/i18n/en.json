@@ -119,5 +119,22 @@
     "grantExpired": "The emergency grant has expired. A fresh override is required.",
     "breakGlass": "Emergency Clinical Override",
     "noVitals": "No vitals recorded."
+  },
+  "security": {
+    "title": "Security console",
+    "signedInAs": "Signed in as",
+    "tabs": "Security console sections",
+    "tab_ledger": "Ledger",
+    "tab_verify": "Verify chain",
+    "tab_abuse": "Abuse alerts",
+    "tab_overrides": "Override review",
+    "filterAction": "Filter by action",
+    "apply": "Apply",
+    "verifyChain": "Verify chain",
+    "verifying": "Verifying…",
+    "healthy": "HEALTHY",
+    "tampered": "TAMPERED",
+    "runDemo": "Run abuse demonstration",
+    "acknowledge": "Acknowledge"
   }
 }
