@@ -42,8 +42,13 @@ export const REDACTED_KEYS = [
   'note_body'
 ];
 
-export function createLogger(level: string = process.env.LOG_LEVEL ?? 'info'): Logger {
-  return pino({
+export function createLogger(
+  level: string = process.env.LOG_LEVEL ?? 'info',
+  // Justification: tests pass an in-memory stream to assert redaction
+  // without touching stdout; production always uses the default destination.
+  destination?: pino.DestinationStream
+): Logger {
+  const options = {
     level,
     redact: {
       paths: REDACTED_KEYS.flatMap((key) => [
@@ -56,7 +61,8 @@ export function createLogger(level: string = process.env.LOG_LEVEL ?? 'info'): L
       ]),
       censor: '[REDACTED]'
     }
-  });
+  };
+  return destination === undefined ? pino(options) : pino(options, destination);
 }
 
 export const logger = createLogger();
