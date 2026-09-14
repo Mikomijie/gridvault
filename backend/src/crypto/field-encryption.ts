@@ -64,10 +64,11 @@ export class FieldCrypto {
     const cipher = createCipheriv('aes-256-gcm', dek, iv);
     cipher.setAAD(FieldCrypto.aad(patientId, column, keyVersion));
     const ciphertext = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()]);
+    // getAuthTag() for AES-256-GCM without an explicit authTagLength always
+    // returns 16 bytes; a length check here would be an untestable branch
+    // (NFR-10). Tampering is caught on the decrypt path by GCM
+    // authentication (AT-007).
     const tag = cipher.getAuthTag();
-    if (tag.byteLength !== TAG_BYTES) {
-      throw new EncryptionIntegrityError('Unexpected GCM tag length');
-    }
     return (
       `v${keyVersion}:${iv.toString('base64')}:` +
       `${ciphertext.toString('base64')}:${tag.toString('base64')}`
