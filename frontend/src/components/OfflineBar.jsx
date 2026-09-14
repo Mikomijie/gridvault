@@ -48,7 +48,7 @@ export default function OfflineBar() {
                 {en.offline.synced} {lastSyncedCount}
               </span>
             )}
-            <label className="flex items-center gap-1 text-[11px] font-bold text-[#707783]">
+            <label className="flex items-center gap-1 text-[11px] font-bold text-[#404752]">
               <input
                 type="checkbox"
                 checked={simulated}

@@ -117,7 +117,7 @@ export default function SecurityPage() {
               role="tab"
               aria-selected={tab === name}
               onClick={() => setTab(name)}
-              className={`px-4 py-2 text-[13px] font-bold ${tab === name ? 'border-b-2 border-[#005ea4] text-[#005ea4]' : 'text-[#707783]'}`}
+              className={`px-4 py-2 text-[13px] font-bold ${tab === name ? 'border-b-2 border-[#005ea4] text-[#005ea4]' : 'text-[#404752]'}`}
             >
               {en.security[`tab_${name}`] ?? name}
             </button>

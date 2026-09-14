@@ -138,7 +138,7 @@ export default function PatientDossierPage() {
         {!loading && dossier !== null && (
           <div className="mt-4">
             <h1 className="text-[22px] font-bold">
-              {dossier.data.patient?.full_name ?? id} <span className="font-mono text-[14px] text-[#707783]">{id}</span>
+              {dossier.data.patient?.full_name ?? id} <span className="font-mono text-[14px] text-[#404752]">{id}</span>
             </h1>
             <div className="mt-3 flex gap-1 border-b border-[#c0c7d4]" role="tablist" aria-label={en.dossier.tabs}>
               {TABS.map((name) => (
@@ -148,7 +148,7 @@ export default function PatientDossierPage() {
                   role="tab"
                   aria-selected={tab === name}
                   onClick={() => setTab(name)}
-                  className={`px-4 py-2 text-[13px] font-bold ${tab === name ? 'border-b-2 border-[#005ea4] text-[#005ea4]' : 'text-[#707783]'}`}
+                  className={`px-4 py-2 text-[13px] font-bold ${tab === name ? 'border-b-2 border-[#005ea4] text-[#005ea4]' : 'text-[#404752]'}`}
                 >
                   {en.dossier[`tab_${name}`] ?? name}
                 </button>

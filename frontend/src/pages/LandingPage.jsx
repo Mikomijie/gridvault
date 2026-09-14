@@ -143,10 +143,10 @@ export default function LandingPage() {
             <div className="hidden md:flex items-center gap-6 text-[#404752]">
               <span className="flex items-center gap-1">
                 <span className="inline-block w-2 h-2 rounded-full bg-[#006a62]"></span>
-                Lagos & Abuja Cluster Online
+                Ward edge node design
               </span>
               <span className="text-[#c0c7d4]">|</span>
-              <span>FMOH Interoperability Standard v2.4</span>
+              <span>Deterministic offline sync</span>
             </div>
           </div>
         </aside>
@@ -502,19 +502,19 @@ export default function LandingPage() {
             >
               Request a Demo Today
             </a>
-            <div className="flex items-center justify-center gap-6 mt-8 text-white/70 text-[12px] font-bold tracking-[0.05em] flex-wrap">
+            <div className="flex items-center justify-center gap-6 mt-8 text-white text-[12px] font-bold tracking-[0.05em] flex-wrap">
               <span className="flex items-center gap-1">
-                <span className="text-white/70">{Icons.verifiedUser}</span>
+                <span className="text-white">{Icons.verifiedUser}</span>
                 No certification claimed
               </span>
-              <span className="text-white/30">•</span>
+              <span className="text-white/60">•</span>
               <span className="flex items-center gap-1">
-                <span className="text-white/70">{Icons.lock}</span>
+                <span className="text-white">{Icons.lock}</span>
                 AES-256-GCM field encryption
               </span>
-              <span className="text-white/30">•</span>
+              <span className="text-white/60">•</span>
               <span className="flex items-center gap-1">
-                <span className="text-white/70">{Icons.hub}</span>
+                <span className="text-white">{Icons.hub}</span>
                 Witness-anchored audit log
               </span>
             </div>
@@ -544,7 +544,7 @@ export default function LandingPage() {
             </div>
 
             <div>
-              <h4 className="text-[14px] font-semibold text-[#131b2e] mb-4">Platform</h4>
+              <h3 className="text-[14px] font-semibold text-[#131b2e] mb-4">Platform</h3>
               <ul className="space-y-2 text-[14px] text-[#404752]">
                 <li>
                   <a href="#" className="hover:text-[#005ea4] transition-colors">
@@ -570,7 +570,7 @@ export default function LandingPage() {
             </div>
 
             <div>
-              <h4 className="text-[14px] font-semibold text-[#131b2e] mb-4">Clinical Features</h4>
+              <h3 className="text-[14px] font-semibold text-[#131b2e] mb-4">Clinical Features</h3>
               <ul className="space-y-2 text-[14px] text-[#404752]">
                 <li>
                   <a href="#" className="hover:text-[#005ea4] transition-colors">
@@ -596,9 +596,9 @@ export default function LandingPage() {
             </div>
 
             <div>
-              <h4 className="text-[14px] font-semibold text-[#131b2e] mb-4">
+              <h3 className="text-[14px] font-semibold text-[#131b2e] mb-4">
                 Security & Compliance
-              </h4>
+              </h3>
               <ul className="space-y-2 text-[14px] text-[#404752]">
                 <li>
                   <a href="#" className="hover:text-[#005ea4] transition-colors">
@@ -624,7 +624,7 @@ export default function LandingPage() {
             </div>
 
             <div>
-              <h4 className="text-[14px] font-semibold text-[#131b2e] mb-4">Hospital Support</h4>
+              <h3 className="text-[14px] font-semibold text-[#131b2e] mb-4">Hospital Support</h3>
               <ul className="space-y-2 text-[12px] text-[#404752]">
                 <li>
                   <span className="text-[11px] font-bold text-[#131b2e] block">

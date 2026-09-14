@@ -342,7 +342,7 @@ export default function LoginPage() {
                   </div>
                   <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#81f3e5]/60 text-[#006f66] text-[11px] font-bold tracking-[0.05em]">
                     <span className="text-[#006a62]">{Icons.dns}</span>
-                    Nodes: Lagos & Abuja
+                    Ward edge node
                   </div>
                 </div>
               </div>
@@ -519,7 +519,7 @@ export default function LoginPage() {
 
       {/* FOOTER */}
       <footer className="w-full bg-[#eaedff] border-t border-[#c0c7d4]/40 py-4">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] font-bold text-[#707783]">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] font-bold text-[#404752]">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-[#006a62]"></span>

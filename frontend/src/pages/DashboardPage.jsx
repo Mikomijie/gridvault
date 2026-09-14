@@ -502,9 +502,6 @@ export default function DashboardPage() {
               <span className="text-[#006a62]">{Icons.schedule}</span>
               Morning (6:00 AM - 2:00 PM)
             </div>
-            <button className="w-9 h-9 rounded flex items-center justify-center text-[#404752] hover:bg-[#e2e7ff] border border-[#c0c7d4] transition-colors">
-              {Icons.settings}
-            </button>
             <div className="w-8 h-8 rounded-full bg-[#005ea4] flex items-center justify-center flex-shrink-0 text-white">
               {Icons.person}
             </div>
@@ -618,9 +615,6 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button className="w-10 h-10 rounded-lg bg-[#eaedff] text-[#404752] hover:bg-[#e2e7ff] flex items-center justify-center transition-colors">
-                    {Icons.tune}
-                  </button>
                   <button
                     type="button"
                     onClick={handleLogout}
@@ -698,9 +692,9 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <span className="text-[#005ea4]">{Icons.assignmentInd}</span>
-                  <h2 className="text-[20px] font-semibold text-[#131b2e]">
-                    Assigned Inpatients Under Your Direct Care
-                  </h2>
+                    <h1 className="text-[20px] font-semibold text-[#131b2e]">
+                      Assigned Inpatients Under Your Direct Care
+                    </h1>
                 </div>
                 <div className="hidden md:flex items-center gap-1.5 text-[12px] text-[#404752]">
                   <span className="text-[#006a62]">{Icons.verifiedUser}</span>
@@ -740,9 +734,9 @@ export default function DashboardPage() {
                         <div className="flex items-start justify-between gap-4 mb-4">
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2 flex-wrap mb-1">
-                              <h3 className="text-[18px] font-semibold text-[#131b2e]">
+                              <h2 className="text-[18px] font-semibold text-[#131b2e]">
                                 {patient.name}
-                              </h3>
+                              </h2>
                               <span className="px-2 py-0.5 rounded bg-[#eaedff] text-[11px] font-bold text-[#404752]">
                                 {patient.id}
                               </span>
