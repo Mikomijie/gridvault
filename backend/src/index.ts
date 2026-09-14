@@ -67,6 +67,7 @@ const app = createApp({
     maxLoginAttempts: config.RATE_LIMIT_LOGIN_ATTEMPTS,
     lockoutMinutes: config.LOGIN_LOCKOUT_MINUTES,
     shiftGraceMinutes: config.SHIFT_GRACE_MINUTES,
+    overrideTtlMinutes: config.OVERRIDE_TTL_MINUTES,
     demoMode: config.DEMO_MODE,
     masterKey: config.masterKeyBytes,
     masterKeyLoaded: config.masterKeyBytes !== null,

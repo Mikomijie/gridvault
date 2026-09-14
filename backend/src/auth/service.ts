@@ -468,6 +468,30 @@ export class AuthService {
         },
         { clock: this.clock, timeZone: this.timeZone }
       );
+      // A grant does not survive logout (PRD 7.2 lifecycle): close every
+      // ACTIVE grant so the next login starts without emergency access.
+      const grants = emergencyOverridesRepository(this.db).listActiveForStaff(subject.user.staff_id);
+      for (const grant of grants) {
+        this.db
+          .prepare("UPDATE emergency_overrides SET state = 'CLOSED', closed_at = ? WHERE id = ?")
+          .run(at, grant.id);
+        appendLedgerEntry(
+          this.db,
+          {
+            staff_id: subject.user.staff_id,
+            staff_role: subject.user.role,
+            ward: grant.ward,
+            patient_id: grant.patient_id,
+            action: 'EMERGENCY_OVERRIDE_CLOSED',
+            details: { override_id: grant.id, reason: 'logout' },
+            session_id: subject.sessionId,
+            terminal_id: meta.terminal_id ?? null,
+            source_ip: meta.source_ip ?? null,
+            timestamp: at
+          },
+          { clock: this.clock, timeZone: this.timeZone }
+        );
+      }
     });
     write();
   }

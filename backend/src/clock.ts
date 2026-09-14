@@ -23,6 +23,23 @@ export function fixedClock(isoInstant: string): Clock {
   };
 }
 
+/** A manually advanced clock for expiry and lifecycle tests. Never production. */
+export class MutableClock implements Clock {
+  private atMs: number;
+
+  constructor(isoInstant: string) {
+    this.atMs = new Date(isoInstant).getTime();
+  }
+
+  now(): Date {
+    return new Date(this.atMs);
+  }
+
+  advanceMs(ms: number): void {
+    this.atMs += ms;
+  }
+}
+
 function pad(value: number, width: number): string {
   return String(value).padStart(width, '0');
 }

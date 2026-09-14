@@ -47,6 +47,7 @@ import { PATIENT_FIELD_GROUPS, type FieldGroup, type PatientGroup } from '../pol
 import { deriveStatus, parseBloodPressure } from './status.js';
 import { buildMeta, maskName, RESTRICTED, type RedactionEntry, type SerializedMeta } from '../serialize/redact.js';
 import type { AuthenticatedSubject, RequestMeta } from '../auth/service.js';
+import type { OverrideService } from '../override/service.js';
 import type { PatientBundle, RecordSource } from './source.js';
 
 /** Break-glass scope (PRD 7.4): everything readable, VITALS+CLINICAL writable, SENSITIVE read-only. */
@@ -125,6 +126,8 @@ export interface RecordsServiceOptions {
   clock?: Clock;
   timeZone?: string;
   shiftGraceMinutes?: number;
+  /** Present when break-glass is wired: expired grants answer 410, not 403. */
+  overrides?: OverrideService;
 }
 
 export class RecordsService {
@@ -133,6 +136,7 @@ export class RecordsService {
   private readonly crypto: FieldCrypto | null;
   private readonly clock: Clock;
   private readonly timeZone: string;
+  private readonly overrides: OverrideService | null;
 
   constructor(options: RecordsServiceOptions) {
     this.db = options.db;
@@ -140,6 +144,7 @@ export class RecordsService {
     this.crypto = options.crypto;
     this.clock = options.clock ?? systemClock;
     this.timeZone = options.timeZone ?? 'Africa/Lagos';
+    this.overrides = options.overrides ?? null;
   }
 
   private stamp(at: Date = this.clock.now()): string {
@@ -221,6 +226,23 @@ export class RecordsService {
     bundle: PatientBundle,
     meta: RequestMeta
   ): never {
+    // An expired grant is a distinct state from a denial: the clinician acted
+    // lawfully, the hour ran out. AT-210 pins 410 GRANT_EXPIRED here.
+    if (this.overrides !== null) {
+      const expired = this.overrides.consumeExpiredGrant(auth.user.staff_id, bundle.patient.id, {
+        session_id: auth.sessionId,
+        terminal_id: meta.terminal_id ?? null,
+        source_ip: meta.source_ip ?? null
+      });
+      if (expired !== null) {
+        throw new AppError({
+          code: 'GRANT_EXPIRED',
+          httpStatus: 410,
+          message: 'The emergency grant has expired. A fresh override is required.',
+          reasonCode: 'GRANT_EXPIRED'
+        });
+      }
+    }
     const base = this.auditBase(auth, bundle, meta);
     const write = this.db.transaction(() => {
       appendLedgerEntry(

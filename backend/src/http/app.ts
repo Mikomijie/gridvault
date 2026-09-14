@@ -22,6 +22,8 @@ import { IpRateLimiter } from '../auth/rate-limit.js';
 import { FieldCrypto } from '../crypto/field-encryption.js';
 import { SqliteRecordSource } from '../records/source.js';
 import { RecordsService } from '../records/service.js';
+import { OverridePinThrottle, OverrideService, loadJustifications } from '../override/service.js';
+import { createOverrideRouter } from './routes/override.js';
 import type { AnchorServiceConfig } from '../ledger/anchor.js';
 import { createAuditRouter } from './routes/audit.js';
 import { createAuthRouter } from './routes/auth.js';
@@ -46,6 +48,8 @@ export interface AuthAppConfig {
   masterKey?: Uint8Array | null;
   masterKeyLoaded?: boolean;
   migrationsDir?: string | null;
+  overrideTtlMinutes?: number;
+  justifications?: string[];
 }
 
 export interface CreateAppOptions {
@@ -89,13 +93,24 @@ export function createApp(options: CreateAppOptions): express.Express {
   // reads that do not need decryption work without it, and anything that
   // does fails closed with ENCRYPTION_UNAVAILABLE (fail loudly, §2.7).
   const masterKey = authConfig.masterKey ?? null;
+  // Invalid justification codes fail boot, not the first emergency.
+  const justifications = authConfig.justifications ?? loadJustifications().codes;
+  const overrideService = new OverrideService({
+    db: options.db,
+    clock: options.clock,
+    timeZone: options.timeZone,
+    ttlMinutes: authConfig.overrideTtlMinutes ?? 60,
+    justifications,
+    pinThrottle: new OverridePinThrottle()
+  });
   const recordsService = new RecordsService({
     db: options.db,
     source: new SqliteRecordSource(options.db),
     crypto: masterKey === null ? null : new FieldCrypto(masterKey),
     clock: options.clock,
     timeZone: options.timeZone,
-    shiftGraceMinutes
+    shiftGraceMinutes,
+    overrides: overrideService
   });
 
   const app = express();
@@ -140,6 +155,7 @@ export function createApp(options: CreateAppOptions): express.Express {
   app.use('/api/patients', createPatientsRouter({ service: recordsService, authenticator }));
   app.use('/api/handover', createHandoverRouter({ service: recordsService, authenticator }));
   app.use('/api/admissions', createAdmissionsRouter({ service: recordsService, authenticator }));
+  app.use('/api/override', createOverrideRouter({ service: overrideService, authenticator }));
 
   app.use((_req, res) => {
     res.status(404).json({

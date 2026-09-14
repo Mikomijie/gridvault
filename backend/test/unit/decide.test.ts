@@ -269,11 +269,11 @@ describe('decide() branch coverage (AT-114)', () => {
   });
 
   it('AT-114: coverage gate over the reason-code table', () => {
-    // QUEUE_ACCESS_DENIED is raised by the admissions-queue endpoint (a
-    // non-patient resource outside decide()'s signature) and is asserted in
-    // the records integration suite; every other code is proven here.
+    // QUEUE_ACCESS_DENIED and GRANT_EXPIRED are raised by endpoints over
+    // non-patient resources outside decide()'s signature; both are asserted
+    // in the integration suites. Every other code is proven here.
     for (const code of POLICY_REASONS) {
-      if (code === 'QUEUE_ACCESS_DENIED') {
+      if (code === 'QUEUE_ACCESS_DENIED' || code === 'GRANT_EXPIRED') {
         continue;
       }
       expect(seen.has(code), `reason code never exercised: ${code}`).toBe(true);

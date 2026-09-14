@@ -1,0 +1,14 @@
+{
+  "$schema": "gridvault-justifications-v1",
+  "codes": [
+    "ACUTE_TRAUMA_UNCONSCIOUS",
+    "CARDIAC_ARREST_CODE_BLUE",
+    "SEVERE_SEPSIS_DECOMPENSATION",
+    "OBSTETRIC_EMERGENCY",
+    "PAEDIATRIC_EMERGENCY",
+    "URGENT_SURGICAL_CONSULT",
+    "MASS_CASUALTY_TRIAGE",
+    "OTHER"
+  ],
+  "other_min_notes_length": 20
+}

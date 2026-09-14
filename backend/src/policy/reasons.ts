@@ -19,7 +19,8 @@ export const POLICY_REASONS = [
   'ROLE_WARD_DUTY_SATISFIED',
   'LEDGER_ACCESS',
   'LEDGER_FORBIDDEN',
-  'QUEUE_ACCESS_DENIED'
+  'QUEUE_ACCESS_DENIED',
+  'GRANT_EXPIRED'
 ] as const;
 
 export type PolicyReason = (typeof POLICY_REASONS)[number];
@@ -40,5 +41,6 @@ export const REASON_TEXT: Record<PolicyReason, string> = {
   ROLE_WARD_DUTY_SATISFIED: 'Role, ward and duty satisfied',
   LEDGER_ACCESS: 'Audit access granted',
   LEDGER_FORBIDDEN: 'Audit access is limited to administrators and own-ward doctors',
-  QUEUE_ACCESS_DENIED: 'The admissions queue is limited to intake clerks'
+  QUEUE_ACCESS_DENIED: 'The admissions queue is limited to intake clerks',
+  GRANT_EXPIRED: 'The emergency grant has expired — a fresh override is required'
 };

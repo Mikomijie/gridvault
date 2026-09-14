@@ -62,6 +62,19 @@ This document records architectural, design, and operational decisions where AGE
   12. AT-008/AT-009 expectations extended from `[1, 2]` to `[1, 2, 3]` for migration 003; assertions unchanged.
 - **Gates at commit time:** `npm test` 105/105, `npm run lint` 0 errors, `tsc` clean, `decide.ts` + `duty.ts` 100% statements/branches/functions/lines.
 
+### 2026-09-14 — Phase 5: Break-Glass Override, AT-201..AT-212
+
+- **Context:** AGENTS.md §7 P5 requires PIN-verified scoped grants in one transaction with outbox dispatch, lifecycle (expiry/close/revoke/review) and ≤400 ms p95 server-side.
+- **Decision:**
+  1. Execute writes `EMERGENCY_OVERRIDE_REQUESTED` then `EMERGENCY_OVERRIDE_GRANTED` plus the grant row plus two HIGH outbox rows (CMO staff id, `charge_nurse:<ward>`) in one transaction; delivery is a separate worker step that can never block care (AT-208).
+  2. Grants are resolved server-side per request (`grantFor`); nothing grant-shaped enters the JWT.
+  3. Expired grants answer 410 `GRANT_EXPIRED` (not 403) via lazy expiry in the records deny path; the transition writes `EMERGENCY_OVERRIDE_CLOSED` with `reason: expired` because §8.1 has no EXPIRED action.
+  4. Logout closes all ACTIVE grants (PRD §7.2 lifecycle).
+  5. Override PINs throttle per-staff in memory (3 strikes → 15 min, 429); IP lockout never applies to break-glass (PRD §6.6).
+  6. Frequency spikes (2nd grant in 60 min) succeed with `RULE-ABUSE-04` CRITICAL and an escalated dispatch line (AT-212).
+  7. Justification codes live in `backend/config/justifications.json`, validated at boot; `OTHER` needs ≥20 chars.
+- **Gates at commit time:** `npm test` 117/117, lint 0 errors, `tsc` clean.
+
 ### 2026-09-13 — Phase 2: Tamper-Evident Ledger, Anchor Witness, and AT-301..AT-315
 
 - **Context:** AGENTS.md §7 P2 requires the append path, streaming verifier, Ed25519-anchored witness, JSONL export with standalone file verification, and the `demo:tamper` CLI, proven by acceptance tests AT-301..AT-315.
