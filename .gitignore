@@ -6,16 +6,18 @@
 !.nvmrc
 !.editorconfig
 !README.md
-!RELEASE-NOTES.md
-!PRD.md
-!AGENTS.md
-!DESIGN.md
 !/docs/
 !/docs/**
 !/diagrams/
 !/diagrams/**
 !/.github/
 !/.github/**
+
+# Explicitly ignored design and requirements documents
+RELEASE-NOTES.md
+PRD.md
+AGENTS.md
+DESIGN.md
 
 # Whitelist root monorepo & project configuration files
 !package.json

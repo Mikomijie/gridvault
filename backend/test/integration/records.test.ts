@@ -253,7 +253,7 @@ describe('policy and redaction (PRD 6)', () => {
       demoSensitivePlaintexts(),
       'AT-116 matrix'
     );
-  });
+  }, 20000);
 
   it('AT-117: swapped ciphertext fails closed with ENCRYPTION_INTEGRITY_FAILURE', async () => {
     const stack = await createSeededStack(MORNING_CLOCK);

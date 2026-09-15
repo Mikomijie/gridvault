@@ -289,11 +289,11 @@ describe('operations AT-514, AT-908, AT-912', () => {
         method: 'POST',
         headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
         body: JSON.stringify({ mutations })
-      });
+      }).catch(() => undefined);
       await new Promise((resolve) => setTimeout(resolve, 120));
       killServer(first);
       await waitForExit(first);
-      await attempt.catch(() => undefined);
+      await attempt;
       // The group kill must have silenced the port: guards against the
       // tsx-wrapper orphan that would otherwise keep serving.
       await new Promise((resolve) => setTimeout(resolve, 500));
