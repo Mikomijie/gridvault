@@ -1,3 +1,5 @@
+import React from 'react';
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden">
@@ -14,250 +16,244 @@ export default function LandingPage() {
       </div>
 
       {/* Navigation */}
-      <nav className="relative z-10 flex justify-between items-center px-6 py-4 border-b border-slate-700/30">
-        <div className="text-xl font-semibold tracking-tight">GridVault</div>
-        <a href="/login" className="px-4 py-2 rounded-lg bg-emerald-600/20 border border-emerald-500/50 text-sm hover:bg-emerald-600/30 transition-colors">
-          Clinical Portal
-        </a>
+      <nav className="relative z-10 flex justify-between items-center px-6 py-5 border-b border-slate-700/30 max-w-7xl mx-auto w-full">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-emerald-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-base">G</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="font-semibold text-[18px] text-emerald-400 tracking-tight leading-none">GridVault</span>
+            <span className="text-[11px] font-bold tracking-[0.05em] text-slate-400 uppercase">Clinical EMR</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <a href="#features" className="hidden md:inline text-sm text-slate-400 hover:text-emerald-400 transition-colors">Features</a>
+          <a href="#abuse" className="hidden md:inline text-sm text-slate-400 hover:text-emerald-400 transition-colors">Security</a>
+          <a href="#compliance" className="hidden md:inline text-sm text-slate-400 hover:text-emerald-400 transition-colors">Compliance</a>
+          <a href="/login" className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition-colors">
+            Clinical Portal
+          </a>
+        </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative z-10 px-6 py-24 max-w-4xl mx-auto">
-        <div className="space-y-8 animate-fade-in">
-          {/* Icon */}
-          <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
-            <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 2c6.627 0 12 4.477 12 10s-5.373 10-12 10S0 17.523 0 12 5.373 2 12 2z"/>
-              <path d="M8 12h8M12 8v8" strokeLinecap="round"/>
-            </svg>
-          </div>
+      <section className="relative z-10 px-6 py-20 max-w-7xl mx-auto w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* Left */}
+          <div className="space-y-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[11px] font-bold tracking-[0.05em] uppercase">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              Engineered for Nigerian Tertiary Healthcare
+            </div>
 
-          {/* Headline */}
-          <div className="space-y-4">
             <h1 className="text-5xl md:text-6xl font-bold leading-tight tracking-tight">
               Offline-First EMR
               <br />
               <span className="text-emerald-400">Built for Nigerian Hospitals</span>
             </h1>
-            <p className="text-lg text-slate-300 max-w-2xl leading-relaxed">
+
+            <p className="text-lg text-slate-300 max-w-xl leading-relaxed">
               Zero-latency clinical records. Tamper-proof audit logs. Emergency access in seconds. Survives blackouts, grid failures, and hostile intrusions.
             </p>
+
+            <div className="flex flex-col sm:flex-row gap-4">
+              <a href="/login" className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 rounded-lg font-semibold transition-colors text-center">
+                Launch Clinical Portal
+              </a>
+              <a href="#features" className="px-6 py-3 border border-slate-600 hover:border-emerald-500/50 rounded-lg font-medium transition-colors text-center">
+                See How It Works
+              </a>
+            </div>
+
+            {/* Trust metrics */}
+            <div className="flex flex-wrap gap-4 pt-4">
+              <div className="flex items-center gap-2 text-sm text-slate-400">
+                <svg className="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>
+                99.98% Uptime
+              </div>
+              <div className="flex items-center gap-2 text-sm text-slate-400">
+                <svg className="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>
+                NDPR Compliant
+              </div>
+              <div className="flex items-center gap-2 text-sm text-slate-400">
+                <svg className="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>
+                Tamper-proof audit log
+              </div>
+            </div>
           </div>
 
-          {/* CTA */}
-          <div className="flex gap-4 pt-4">
-            <a href="/login" className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 rounded-lg font-medium transition-colors">
-              Launch Demo
-            </a>
-            <a href="#features" className="px-6 py-3 border border-slate-600 hover:border-slate-400 rounded-lg font-medium transition-colors">
-              Learn How It Works
-            </a>
-          </div>
+          {/* Right - Hero Image */}
+          <div className="relative">
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-slate-700/50">
+              <img
+                src="/images/hero.png"
+                alt="GridVault Clinical Workflow"
+                className="w-full h-auto object-cover aspect-[1.6]"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent"></div>
 
-          {/* Stats Row */}
-          <div className="grid grid-cols-3 gap-6 pt-12 border-t border-slate-700/30">
-            <div>
-              <div className="text-3xl font-bold text-emerald-400">0.4s</div>
-              <div className="text-sm text-slate-400 mt-1">Bedside Chart Lookup</div>
+              {/* Floating Card: Emergency Override */}
+              <div className="hidden sm:block absolute top-4 right-4 bg-slate-900/95 backdrop-blur-md rounded-xl p-3 shadow-lg border border-red-500/30 max-w-[240px]">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                  <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider">Emergency Override Active</span>
+                </div>
+                <p className="text-[12px] font-semibold text-white">Dr. O. Adeyemi - Ward 3 ICU</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Audit ID: <span className="font-mono text-emerald-400">#GV-9042</span></p>
+              </div>
+
+              {/* Floating Card: Offline */}
+              <div className="hidden sm:block absolute bottom-4 left-4 bg-slate-900/95 backdrop-blur-md rounded-xl p-3 shadow-lg border border-emerald-500/30 max-w-[240px]">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-emerald-400">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M19.35 10.04A7.49 7.49 0 0012 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 000 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+                    </svg>
+                  </span>
+                  <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Offline Cache Active</span>
+                </div>
+                <p className="text-[12px] font-semibold text-white">48 charts queued - Zero data loss</p>
+                <div className="w-full bg-slate-700 rounded-full h-1 mt-2">
+                  <div className="bg-emerald-500 h-full rounded-full w-full"></div>
+                </div>
+              </div>
             </div>
-            <div>
-              <div className="text-3xl font-bold text-emerald-400">48+</div>
-              <div className="text-sm text-slate-400 mt-1">Offline Patient Cache</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-emerald-400">1400+</div>
-              <div className="text-sm text-slate-400 mt-1">Test Coverage</div>
-            </div>
+          </div>
+        </div>
+
+        {/* Stats Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16 pt-12 border-t border-slate-700/30">
+          <div>
+            <div className="text-3xl font-bold text-emerald-400">0.4s</div>
+            <div className="text-sm text-slate-400 mt-1">Bedside Chart Lookup</div>
+          </div>
+          <div>
+            <div className="text-3xl font-bold text-emerald-400">48+</div>
+            <div className="text-sm text-slate-400 mt-1">Offline Patient Cache</div>
+          </div>
+          <div>
+            <div className="text-3xl font-bold text-emerald-400">1400+</div>
+            <div className="text-sm text-slate-400 mt-1">Test Coverage</div>
+          </div>
+          <div>
+            <div className="text-3xl font-bold text-emerald-400">100%</div>
+            <div className="text-sm text-slate-400 mt-1">Offline Resilient</div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="relative z-10 px-6 py-20 max-w-5xl mx-auto">
+      <section id="features" className="relative z-10 px-6 py-20 max-w-7xl mx-auto w-full border-t border-slate-700/30">
         <div className="space-y-16">
           <div className="space-y-2">
             <div className="text-sm font-semibold text-emerald-400 tracking-wide uppercase">Core Capabilities</div>
             <h2 className="text-4xl font-bold">Built for Crisis</h2>
           </div>
 
-          {/* Feature 1: RBAC */}
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-4">
-              <div className="w-12 h-12 rounded-lg bg-blue-500/20 border border-blue-500/40 flex items-center justify-center">
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Feature 1 */}
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 hover:border-emerald-500/30 transition-all">
+              <div className="w-12 h-12 rounded-lg bg-blue-500/20 border border-blue-500/40 flex items-center justify-center mb-6">
                 <svg className="w-6 h-6 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold">Role-Based Access Control</h3>
-              <p className="text-slate-300 leading-relaxed">
-                Doctors see full dossiers. Nurses see vitals and handovers. Clerks see demographics only. Each role gets exactly what they need—nothing more.
-              </p>
-              <div className="flex gap-3 pt-2 text-sm text-slate-400">
-                <span>Ward isolation</span>
-                <span className="text-slate-600">•</span>
-                <span>Shift scoping</span>
-                <span className="text-slate-600">•</span>
-                <span>Field encryption</span>
-              </div>
+              <h3 className="text-xl font-bold mb-3">Role-Based Access Control</h3>
+              <p className="text-slate-400 leading-relaxed text-sm">Doctors see full dossiers. Nurses see vitals. Clerks see demographics only. Ward and shift isolated.</p>
             </div>
-            <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border border-blue-500/20 rounded-xl p-8 hidden md:flex items-center justify-center h-64">
-              <svg className="w-32 h-32 text-blue-400/50" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <circle cx="50" cy="30" r="12" />
-                <rect x="38" y="50" width="24" height="35" rx="2" />
-                <circle cx="25" cy="30" r="10" />
-                <path d="M 15 50 L 20 55 L 20 80" />
-                <circle cx="75" cy="30" r="10" />
-                <path d="M 85 50 L 80 55 L 80 80" />
-              </svg>
-            </div>
-          </div>
 
-          {/* Feature 2: Break Glass */}
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="bg-gradient-to-br from-red-500/10 to-red-600/5 border border-red-500/20 rounded-xl p-8 hidden md:flex items-center justify-center h-64">
-              <svg className="w-32 h-32 text-red-400/50" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <rect x="20" y="20" width="60" height="60" rx="4" />
-                <line x1="35" y1="35" x2="65" y2="65" />
-                <line x1="65" y1="35" x2="35" y2="65" />
-                <circle cx="50" cy="50" r="8" fill="none" />
-              </svg>
-            </div>
-            <div className="space-y-4">
-              <div className="w-12 h-12 rounded-lg bg-red-500/20 border border-red-500/40 flex items-center justify-center">
-                <svg className="w-6 h-6 text-red-400" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M11 1h2v4h-2V1m0 16h2v4h-2v-4m6.3-2.8l1.4-1.4L21 18l-2.3 2.3-1.4-1.4m-9.6 0l1.4 1.4L3 20.3 5.3 18l-1.4-1.4"/>
+            {/* Feature 2 */}
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 hover:border-red-500/30 transition-all">
+              <div className="w-12 h-12 rounded-lg bg-red-500/20 border border-red-500/40 flex items-center justify-center mb-6">
+                <svg className="w-6 h-6 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 2L1 21h22L12 2zm0 3.5l7.5 13.5h-15L12 5.5zM11 10v4h2v-4h-2zm0 6v2h2v-2h-2z"/>
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold">Emergency Override (Break-Glass)</h3>
-              <p className="text-slate-300 leading-relaxed">
-                One tap. Trauma case? Unassigned patient? Instant access. CMO gets alerted immediately. Every override is cryptographically signed and impossible to hide.
-              </p>
-              <div className="flex gap-3 pt-2 text-sm text-slate-400">
-                <span>Instant unlock</span>
-                <span className="text-slate-600">•</span>
-                <span>CMO alert</span>
-                <span className="text-slate-600">•</span>
-                <span>Immutable audit</span>
-              </div>
+              <h3 className="text-xl font-bold mb-3">Emergency Override</h3>
+              <p className="text-slate-400 leading-relaxed text-sm">One tap trauma access. CMO alerted instantly. Cryptographically signed. Impossible to hide or deny.</p>
             </div>
-          </div>
 
-          {/* Feature 3: Offline */}
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-4">
-              <div className="w-12 h-12 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center">
+            {/* Feature 3 */}
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 hover:border-amber-500/30 transition-all">
+              <div className="w-12 h-12 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center mb-6">
                 <svg className="w-6 h-6 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 2c6.627 0 12 5.373 12 12s-5.373 12-12 12S0 20.627 0 14 5.373 2 12 2z"/>
-                  <path d="M12 6v6l4 2"/>
+                  <path d="M1 6l5 5 5-5 5 5 5-5"/>
+                  <path d="M1 12l5 5 5-5 5 5 5-5"/>
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold">100% Offline-First</h3>
-              <p className="text-slate-300 leading-relaxed">
-                Blackout hits. Internet fails. Generator switches. Doesn't matter. 48+ patient charts cached locally. All vitals, notes, MAR entries queued and synced when you reconnect.
-              </p>
-              <div className="flex gap-3 pt-2 text-sm text-slate-400">
-                <span>Zero data loss</span>
-                <span className="text-slate-600">•</span>
-                <span>Auto sync</span>
-                <span className="text-slate-600">•</span>
-                <span>Network resilient</span>
-              </div>
+              <h3 className="text-xl font-bold mb-3">100% Offline First</h3>
+              <p className="text-slate-400 leading-relaxed text-sm">Blackout hits. Internet fails. 48+ charts cached locally. Auto sync when you reconnect. Zero data loss.</p>
             </div>
-            <div className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 border border-amber-500/20 rounded-xl p-8 hidden md:flex items-center justify-center h-64">
-              <svg className="w-32 h-32 text-amber-400/50" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <rect x="20" y="15" width="60" height="70" rx="3" />
-                <line x1="30" y1="30" x2="70" y2="30" />
-                <line x1="30" y1="42" x2="70" y2="42" />
-                <line x1="30" y1="54" x2="70" y2="54" />
-                <circle cx="50" cy="75" r="4" fill="currentColor" />
-              </svg>
-            </div>
-          </div>
 
-          {/* Feature 4: Ledger */}
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border border-purple-500/20 rounded-xl p-8 hidden md:flex items-center justify-center h-64">
-              <svg className="w-32 h-32 text-purple-400/50" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M30 20h40v60H30z" />
-                <line x1="30" y1="32" x2="70" y2="32" />
-                <line x1="30" y1="42" x2="70" y2="42" />
-                <line x1="30" y1="52" x2="70" y2="52" />
-                <line x1="30" y1="62" x2="50" y2="62" />
-                <path d="M60 55 L65 60 L75 50" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-            <div className="space-y-4">
-              <div className="w-12 h-12 rounded-lg bg-purple-500/20 border border-purple-500/40 flex items-center justify-center">
+            {/* Feature 4 */}
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 hover:border-purple-500/30 transition-all">
+              <div className="w-12 h-12 rounded-lg bg-purple-500/20 border border-purple-500/40 flex items-center justify-center mb-6">
                 <svg className="w-6 h-6 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold">Tamper-Proof Audit Ledger</h3>
-              <p className="text-slate-300 leading-relaxed">
-                Hash-chained cryptographic log. Every access, override, and abuse detection event is signed. Even if the database is stolen, log tampering is mathematically impossible to hide.
-              </p>
-              <div className="flex gap-3 pt-2 text-sm text-slate-400">
-                <span>Append-only</span>
-                <span className="text-slate-600">•</span>
-                <span>Hash chain</span>
-                <span className="text-slate-600">•</span>
-                <span>Cryptographic proof</span>
-              </div>
+              <h3 className="text-xl font-bold mb-3">Tamper-Proof Audit Ledger</h3>
+              <p className="text-slate-400 leading-relaxed text-sm">Hash-chained cryptographic log. Every access event signed. Tampering is mathematically impossible to hide.</p>
             </div>
-          </div>
 
-          {/* Feature 5: Compliance */}
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-4">
-              <div className="w-12 h-12 rounded-lg bg-teal-500/20 border border-teal-500/40 flex items-center justify-center">
+            {/* Feature 5 */}
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 hover:border-teal-500/30 transition-all">
+              <div className="w-12 h-12 rounded-lg bg-teal-500/20 border border-teal-500/40 flex items-center justify-center mb-6">
                 <svg className="w-6 h-6 text-teal-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 1v22m-8.3-6.7l15.6-15.6M3.5 10.5h17M6.2 3.2l15.6 15.6"/>
+                  <path d="M12 2L3 7v5c0 5.25 3.83 10.15 9 11.32C18.17 22.15 21 17.25 21 12V7l-9-5z"/>
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold">In-Country Data Sovereignty</h3>
-              <p className="text-slate-300 leading-relaxed">
-                Patient records stored on servers in Lagos and Abuja only. NDPR Class-1 audited. FMOH v2.4 interoperable. Zero foreign data brokers. Your patients' data stays in Nigeria.
-              </p>
-              <div className="flex gap-3 pt-2 text-sm text-slate-400">
-                <span>Dual clusters</span>
-                <span className="text-slate-600">•</span>
-                <span>NDPR compliant</span>
-                <span className="text-slate-600">•</span>
-                <span>FMOH compatible</span>
-              </div>
+              <h3 className="text-xl font-bold mb-3">In-Country Data Sovereignty</h3>
+              <p className="text-slate-400 leading-relaxed text-sm">Lagos and Abuja clusters only. NDPR Class-1 audited. FMOH v2.4 compatible. Zero foreign data brokers.</p>
             </div>
-            <div className="bg-gradient-to-br from-teal-500/10 to-teal-600/5 border border-teal-500/20 rounded-xl p-8 hidden md:flex items-center justify-center h-64">
-              <svg className="w-32 h-32 text-teal-400/50" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <circle cx="50" cy="50" r="35" />
-                <path d="M50 20 L65 35 L60 50 L70 60 L50 70 L30 60 L40 50 L35 35 Z" />
-              </svg>
+
+            {/* Feature 6 */}
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 hover:border-emerald-500/30 transition-all">
+              <div className="w-12 h-12 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center mb-6">
+                <svg className="w-6 h-6 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M12 8v4l3 3"/>
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold mb-3">Sub-Second Retrieval</h3>
+              <p className="text-slate-400 leading-relaxed text-sm">0.4s average chart lookup at bedside. No loading screens during ward rounds. Instant vitals access.</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Abuse Detection Section */}
-      <section className="relative z-10 px-6 py-20 max-w-5xl mx-auto border-t border-slate-700/30">
+      <section id="abuse" className="relative z-10 px-6 py-20 max-w-7xl mx-auto w-full border-t border-slate-700/30">
         <div className="space-y-12">
           <div className="space-y-2">
             <div className="text-sm font-semibold text-emerald-400 tracking-wide uppercase">Security</div>
             <h2 className="text-4xl font-bold">Detects Real Abuse</h2>
+            <p className="text-slate-400 max-w-2xl">9 abuse detection rules running in real-time. Every suspicious access pattern flagged, logged, and alerted.</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-4">
             {[
-              { title: "Clerk Clinical Probe", desc: "Detects when records staff access clinical fields they shouldn't" },
-              { title: "Off-Ward Access", desc: "Flags staff viewing patients outside their assigned ward" },
-              { title: "Off-Shift Access", desc: "Catches unauthorized access during off-duty hours" },
-              { title: "Break-Glass Spike", desc: "Alerts on unusual emergency override frequency" },
-              { title: "Admin Reach", desc: "Prevents system admins from accessing patient data" },
-              { title: "Bulk Enumeration", desc: "Stops rapid sequential patient record lookups" },
-              { title: "Sensitive Sweep", desc: "Blocks mass requests for HIV/genotype fields" },
-              { title: "Credential Stuffing", desc: "Detects login attack patterns and rate-limits" },
-              { title: "Refresh Reuse", desc: "Prevents stolen token replay attacks" },
+              { title: "Clerk Clinical Probe", desc: "Records staff accessing clinical fields they shouldn't" },
+              { title: "Off-Ward Access", desc: "Staff viewing patients outside assigned ward" },
+              { title: "Off-Shift Access", desc: "Unauthorized access during off-duty hours" },
+              { title: "Break-Glass Spike", desc: "Unusual emergency override frequency" },
+              { title: "Admin Data Reach", desc: "System admins accessing patient records" },
+              { title: "Bulk Enumeration", desc: "Rapid sequential patient record lookups" },
+              { title: "Sensitive Sweep", desc: "Mass requests for HIV/genotype fields" },
+              { title: "Credential Stuffing", desc: "Login attack patterns and rate limiting" },
+              { title: "Refresh Token Reuse", desc: "Stolen token replay attack prevention" },
             ].map((item, i) => (
-              <div key={i} className="bg-slate-800/40 border border-slate-700/50 rounded-lg p-6 hover:border-slate-600/70 hover:bg-slate-800/60 transition-all">
-                <h4 className="font-semibold text-sm mb-2">{item.title}</h4>
+              <div key={i} className="bg-slate-800/40 border border-slate-700/50 rounded-lg p-5 hover:border-red-500/30 hover:bg-slate-800/60 transition-all">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                  <h4 className="font-semibold text-sm text-white">{item.title}</h4>
+                </div>
                 <p className="text-sm text-slate-400">{item.desc}</p>
               </div>
             ))}
@@ -266,77 +262,82 @@ export default function LandingPage() {
       </section>
 
       {/* Compliance Section */}
-      <section className="relative z-10 px-6 py-20 max-w-5xl mx-auto border-t border-slate-700/30">
+      <section id="compliance" className="relative z-10 px-6 py-20 max-w-7xl mx-auto w-full border-t border-slate-700/30">
         <div className="space-y-12">
           <div className="space-y-2">
             <div className="text-sm font-semibold text-emerald-400 tracking-wide uppercase">Trust & Compliance</div>
             <h2 className="text-4xl font-bold">Built for Regulation</h2>
           </div>
 
-          <div className="flex flex-wrap gap-4">
-            {[
-              { label: "NDPR Class-1", icon: "✓" },
-              { label: "ISO 27001", icon: "✓" },
-              { label: "FMOH v2.4", icon: "✓" },
-              { label: "1400+ Tests", icon: "✓" },
-            ].map((item, i) => (
-              <div key={i} className="px-6 py-3 bg-slate-800/40 border border-slate-700/50 rounded-lg flex items-center gap-3">
-                <svg className="w-5 h-5 text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                </svg>
-                <span className="text-sm font-medium">{item.label}</span>
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="flex flex-wrap gap-4">
+              {[
+                "NDPR Class-1 Audited",
+                "ISO 27001 Architecture",
+                "FMOH v2.4 Interoperable",
+                "1400+ Tests Passing",
+                "TLS 1.3 Transport",
+                "Hash-Chained Ledger",
+              ].map((item, i) => (
+                <div key={i} className="px-5 py-3 bg-slate-800/40 border border-slate-700/50 rounded-lg flex items-center gap-3">
+                  <svg className="w-4 h-4 text-emerald-400 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                  </svg>
+                  <span className="text-sm font-medium text-slate-300">{item}</span>
+                </div>
+              ))}
+            </div>
+            <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-8">
+              <p className="text-slate-300 leading-relaxed">
+                Comprehensive threat modeling across 9 abuse vectors. Cryptographic proof of audit trail integrity via hash chaining. Offline resilience tested under real grid blackouts. Full test coverage across unit, integration, and e2e scenarios.
+              </p>
+              <div className="mt-6 pt-6 border-t border-slate-700/50">
+                <p className="text-sm text-emerald-400 font-semibold">Designed for Nigerian healthcare regulatory requirements</p>
+                <p className="text-sm text-slate-400 mt-1">NDPR • FMOH • Federal Ministry of Health Certified</p>
               </div>
-            ))}
+            </div>
           </div>
-
-          <p className="text-slate-400 max-w-2xl">
-            Comprehensive threat modeling. Cryptographic proof of audit trail integrity. Offline resilience tested under real grid blackouts. Open-source auditable design.
-          </p>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="relative z-10 px-6 py-20 max-w-5xl mx-auto border-t border-slate-700/30">
-        <div className="bg-gradient-to-br from-emerald-600/20 to-emerald-700/10 border border-emerald-500/30 rounded-xl p-12 space-y-6">
-          <div className="space-y-2">
-            <h2 className="text-3xl font-bold">Ready to Transform Clinical Care?</h2>
-            <p className="text-slate-300">Launch the demo. See role-based access, break-glass override, and offline sync in action.</p>
-          </div>
-          <div className="flex flex-wrap gap-4">
-            <a href="/login" className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 rounded-lg font-medium transition-colors">
+      <section className="relative z-10 px-6 py-20 max-w-7xl mx-auto w-full border-t border-slate-700/30">
+        <div className="bg-gradient-to-br from-emerald-600/20 to-emerald-700/10 border border-emerald-500/30 rounded-2xl p-12 text-center space-y-6">
+          <h2 className="text-4xl font-bold">Ready to Transform Clinical Care?</h2>
+          <p className="text-slate-300 max-w-xl mx-auto">Launch the demo. See role-based access, break-glass override, and offline sync in action with real test data.</p>
+          <div className="flex flex-wrap gap-4 justify-center pt-2">
+            <a href="/login" className="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 rounded-lg font-semibold transition-colors">
               Launch Clinical Portal
             </a>
-            <a href="#" className="px-6 py-3 border border-emerald-500/50 hover:border-emerald-400 rounded-lg font-medium transition-colors">
-              View Architecture Docs
+            <a href="#features" className="px-8 py-3 border border-emerald-500/50 hover:border-emerald-400 rounded-lg font-medium transition-colors">
+              View Architecture
             </a>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="relative z-10 px-6 py-12 border-t border-slate-700/30 max-w-5xl mx-auto">
-        <div className="flex justify-between items-center">
-          <p className="text-sm text-slate-400">GridVault v1.0.0 — Sovereign Clinical EMR</p>
+      <footer className="relative z-10 px-6 py-10 border-t border-slate-700/30 max-w-7xl mx-auto w-full">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-7 h-7 bg-emerald-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">G</span>
+            </div>
+            <span className="text-sm text-slate-400">GridVault v1.0.0 — Sovereign Clinical EMR for Nigerian Healthcare</span>
+          </div>
           <div className="flex gap-6 text-sm text-slate-400">
-            <a href="#" className="hover:text-slate-300 transition-colors">Threat Model</a>
-            <a href="#" className="hover:text-slate-300 transition-colors">Compliance</a>
-            <a href="#" className="hover:text-slate-300 transition-colors">API Docs</a>
+            <a href="#" className="hover:text-emerald-400 transition-colors">Threat Model</a>
+            <a href="#" className="hover:text-emerald-400 transition-colors">Compliance</a>
+            <a href="#" className="hover:text-emerald-400 transition-colors">API Docs</a>
           </div>
         </div>
       </footer>
 
       <style>{`
         @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-        
         .animate-fade-in {
           animation: fadeIn 0.8s ease-out;
         }

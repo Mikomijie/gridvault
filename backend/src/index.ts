@@ -6,6 +6,7 @@
 // anything opens: in production a missing key, a short secret, DEMO_MODE or
 // missing TLS acknowledgement is a startup refusal, never a silent fallback.
 
+import 'dotenv/config';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { openDatabase } from './db/connection.js';
