@@ -1,5 +1,13 @@
 # GridVault Compliance Matrix (NDPA 2023 & NDPR 2019)
 
+> The first hosted release is a fictional-data public demo; see
+> [DEPLOYMENT.md](DEPLOYMENT.md). This matrix describes intended control mappings,
+> not a certification or legal assessment. The demo uses Frankfurt hosting,
+> shared credentials and demo-only all-hours duty extensions. It is not suitable
+> for real patient records. Backup scheduling, external notification delivery,
+> and independent organizational witness custody are not implemented by the
+> demo deployment. `scripts/restore-drill.sh` is a drill, not a backup scheduler.
+
 This document establishes the precise boundary between controls implemented in GridVault software, controls designed for operational deployment, and facility-owned responsibilities under the **Nigeria Data Protection Act (NDPA) 2023** and **NDPR 2019**.
 
 ---

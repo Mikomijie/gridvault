@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import en from '../i18n/en.json';
+import DemoPersonas from '../components/DemoPersonas.jsx';
 
 const Icons = {
   verifiedUser: (
@@ -101,6 +102,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white antialiased flex flex-col justify-between">
       <main className="w-full flex-1 flex flex-col items-center justify-center p-4 md:p-6">
         <div className="w-full max-w-7xl mx-auto py-4 md:py-10">
+          {import.meta.env.VITE_PUBLIC_DEMO === 'true' && <DemoPersonas onSelect={setFormData} />}
           <div className="grid grid-cols-1 lg:grid-cols-12 rounded-xl shadow-2xl overflow-hidden bg-slate-800">
             {/* LEFT COLUMN */}
             <div className="lg:col-span-5 relative flex flex-col justify-between p-6 md:p-10 bg-gradient-to-br from-slate-800 to-slate-900 overflow-hidden order-2 lg:order-1 border-r border-slate-700">

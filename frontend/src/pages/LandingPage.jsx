@@ -53,7 +53,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="text-lg text-slate-300 max-w-xl leading-relaxed">
-              Zero-latency clinical records. Tamper-proof audit logs. Emergency access in seconds. Survives blackouts, grid failures, and hostile intrusions.
+              Explore scoped clinical records, tamper-evident audit logs, emergency access and offline queues using fictional patients.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -71,13 +71,13 @@ export default function LandingPage() {
                 <svg className="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
                 </svg>
-                99.98% Uptime
+                Public demonstration
               </div>
               <div className="flex items-center gap-2 text-sm text-slate-400">
                 <svg className="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
                 </svg>
-                NDPR Compliant
+                Fictional-data demo
               </div>
               <div className="flex items-center gap-2 text-sm text-slate-400">
                 <svg className="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
@@ -118,7 +118,7 @@ export default function LandingPage() {
                   </span>
                   <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Offline Cache Active</span>
                 </div>
-                <p className="text-[12px] font-semibold text-white">48 charts queued - Zero data loss</p>
+                <p className="text-[12px] font-semibold text-white">Illustrative offline queue</p>
                 <div className="w-full bg-slate-700 rounded-full h-1 mt-2">
                   <div className="bg-emerald-500 h-full rounded-full w-full"></div>
                 </div>
@@ -130,20 +130,20 @@ export default function LandingPage() {
         {/* Stats Row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16 pt-12 border-t border-slate-700/30">
           <div>
-            <div className="text-3xl font-bold text-emerald-400">0.4s</div>
-            <div className="text-sm text-slate-400 mt-1">Bedside Chart Lookup</div>
+            <div className="text-3xl font-bold text-emerald-400">Scoped</div>
+            <div className="text-sm text-slate-400 mt-1">Bedside Chart Access</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-emerald-400">48+</div>
-            <div className="text-sm text-slate-400 mt-1">Offline Patient Cache</div>
+            <div className="text-3xl font-bold text-emerald-400">Encrypted</div>
+            <div className="text-sm text-slate-400 mt-1">Local Roster Cache</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-emerald-400">1400+</div>
-            <div className="text-sm text-slate-400 mt-1">Test Coverage</div>
+            <div className="text-3xl font-bold text-emerald-400">5</div>
+            <div className="text-sm text-slate-400 mt-1">Demo Staff Roles</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-emerald-400">100%</div>
-            <div className="text-sm text-slate-400 mt-1">Offline Resilient</div>
+            <div className="text-3xl font-bold text-emerald-400">Queued</div>
+            <div className="text-sm text-slate-400 mt-1">Offline Observations</div>
           </div>
         </div>
       </section>
@@ -187,8 +187,8 @@ export default function LandingPage() {
                   <path d="M1 12l5 5 5-5 5 5 5-5"/>
                 </svg>
               </div>
-              <h3 className="text-xl font-bold mb-3">100% Offline First</h3>
-              <p className="text-slate-400 leading-relaxed text-sm">Blackout hits. Internet fails. 48+ charts cached locally. Auto sync when you reconnect. Zero data loss.</p>
+              <h3 className="text-xl font-bold mb-3">Offline Session Support</h3>
+              <p className="text-slate-400 leading-relaxed text-sm">An active session can use its cached roster and queue observations during an outage. Signing in again requires a connection.</p>
             </div>
 
             {/* Feature 4 */}
@@ -210,7 +210,7 @@ export default function LandingPage() {
                 </svg>
               </div>
               <h3 className="text-xl font-bold mb-3">In-Country Data Sovereignty</h3>
-              <p className="text-slate-400 leading-relaxed text-sm">Lagos and Abuja clusters only. NDPR Class-1 audited. FMOH v2.4 compatible. Zero foreign data brokers.</p>
+              <p className="text-slate-400 leading-relaxed text-sm">Demonstrates field encryption, scoped access and tamper-evident auditing. Hosting location and institutional compliance depend on deployment.</p>
             </div>
 
             {/* Feature 6 */}
@@ -272,11 +272,11 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="flex flex-wrap gap-4">
               {[
-                "NDPR Class-1 Audited",
-                "ISO 27001 Architecture",
-                "FMOH v2.4 Interoperable",
-                "1400+ Tests Passing",
-                "TLS 1.3 Transport",
+                "Field-level encryption",
+                "Tamper-evident audit ledger",
+                "Role and ward restrictions",
+                "Automated test suites",
+                "HTTPS deployment",
                 "Hash-Chained Ledger",
               ].map((item, i) => (
                 <div key={i} className="px-5 py-3 bg-slate-800/40 border border-slate-700/50 rounded-lg flex items-center gap-3">
@@ -293,7 +293,7 @@ export default function LandingPage() {
               </p>
               <div className="mt-6 pt-6 border-t border-slate-700/50">
                 <p className="text-sm text-emerald-400 font-semibold">Designed for Nigerian healthcare regulatory requirements</p>
-                <p className="text-sm text-slate-400 mt-1">NDPR • FMOH • Federal Ministry of Health Certified</p>
+                <p className="text-sm text-slate-400 mt-1">Software demonstration • No certification claimed</p>
               </div>
             </div>
           </div>

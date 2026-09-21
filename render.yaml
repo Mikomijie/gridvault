@@ -1,0 +1,55 @@
+# Free fictional-data demo. Local data resets on spin-down, restart or redeploy.
+services:
+  - type: web
+    name: gridvault-demo-witness
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm ci --include=dev && npm run build --workspace=witness
+    startCommand: npm run start --workspace=witness
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: WITNESS_DATA_PATH
+        value: /tmp/gridvault-demo-anchors.jsonl
+      - key: WITNESS_API_KEY
+        generateValue: true
+  - type: web
+    name: gridvault-demo-api
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm ci --include=dev && npm run build --workspace=backend
+    startCommand: npm run start --workspace=backend
+    healthCheckPath: /api/health/ready
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: PUBLIC_DEMO
+        value: "true"
+      - key: DEMO_MODE
+        value: "true"
+      - key: ALLOW_INSECURE_HTTP
+        value: "true"
+      - key: DATABASE_PATH
+        value: /tmp/gridvault-demo.db
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GRIDVAULT_MASTER_KEY
+        sync: false
+      - key: NODE_SIGNING_KEY
+        sync: false
+      - key: WITNESS_URL
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: WITNESS_API_KEY
+        fromService:
+          type: web
+          name: gridvault-demo-witness
+          envVarKey: WITNESS_API_KEY

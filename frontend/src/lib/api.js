@@ -8,7 +8,7 @@
 // - Errors normalize to { code, message, reason_code, details,
 //   can_break_glass } per PRD 12.1; rejection bodies never echo values.
 
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080').replace(/\/+$/, '');
+export const BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.PROD ? '' : 'http://localhost:8080')).replace(/\/+$/, '');
 
 // Session-scoped terminal identity for audit attribution (watermarks,
 // terminal_id on ledger entries). In memory only — never persisted.

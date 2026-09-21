@@ -4,12 +4,11 @@
 // Scope is deliberately narrow: same-origin GETs only, opportunistically
 // cached as they are fetched (stale-while-revalidate) and served from
 // cache when the network fails; navigations fall back to the cached shell
-// so client-side routing can take over. The API origin is never touched —
-// it is cross-origin in every deployment (PRD 14.2 CSP connect-src) and
-// caching PHI-bearing responses here (outside the AES-GCM roster cache)
-// would defeat AT-512/AT-627.
+// so client-side routing can take over. API requests are explicitly excluded,
+// including when a hosting proxy makes them same-origin. Caching patient
+// responses outside the encrypted roster cache would defeat AT-512/AT-627.
 
-const CACHE_NAME = 'gridvault-shell-v1';
+const CACHE_NAME = 'gridvault-shell-v2';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -36,6 +35,7 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+  if (url.pathname === '/api' || url.pathname.startsWith('/api/')) return;
 
   if (request.mode === 'navigate') {
     event.respondWith(
@@ -43,6 +43,9 @@ self.addEventListener('fetch', (event) => {
     );
     return;
   }
+
+  // Cache only build assets, never arbitrary same-origin application responses.
+  if (!url.pathname.startsWith('/assets/') && !url.pathname.startsWith('/images/')) return;
 
   event.respondWith(
     caches.match(request).then((cached) => {

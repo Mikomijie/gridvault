@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { api, clearAccessToken, setAccessToken } from '../lib/api.js';
+import { BASE_URL, api, clearAccessToken, setAccessToken } from '../lib/api.js';
 import { clearRosterCache } from '../lib/cache.js';
 import en from '../i18n/en.json';
 
@@ -51,7 +51,7 @@ export function AuthProvider({ children }) {
     }
     restoreInFlight = (async () => {
       const res = await fetch(
-        `${(import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080').replace(/\/+$/, '')}/api/auth/refresh`,
+        `${BASE_URL}/api/auth/refresh`,
         { method: 'POST', credentials: 'include' }
       );
       if (!res.ok) throw new Error('no session');

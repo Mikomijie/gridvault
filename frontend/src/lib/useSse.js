@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { getAccessToken } from './api.js';
+import { BASE_URL, getAccessToken } from './api.js';
 
 /**
  * useSse jepstream reader (P8, AT-402/613). Native EventSource cannot send
@@ -18,7 +18,7 @@ export function useSse(path, { onEvent, enabled = true }) {
     let reader = null;
 
     const connect = async () => {
-      const base = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080').replace(/\/+$/, '');
+      const base = BASE_URL;
       try {
         const res = await fetch(`${base}${path}`, {
           headers: getAccessToken() !== null ? { authorization: `Bearer ${getAccessToken()}` } : {},

@@ -17,6 +17,9 @@ import { loadAbuseRules } from './abuse/config.js';
 import { loadJustifications } from './override/service.js';
 import type { AnchorServiceConfig } from './ledger/anchor.js';
 import { parseNodeSigningKey } from './crypto/signing.js';
+import { seedDatabase, DEMO_STAFF } from './db/seed.js';
+import { usersRepository, scheduledExtensionsRepository } from './db/repositories/users.js';
+import { randomUUID } from 'node:crypto';
 
 function migrationsDir(): string {
   return path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'migrations');
@@ -78,6 +81,30 @@ function anchorConfig(): AnchorServiceConfig | null {
 const db =
   config.NODE_ENV === 'test' ? openDatabase(':memory:') : openDatabase(config.DATABASE_PATH);
 migrate(db, { migrationsDir: migrationsDir(), timeZone: config.TIMEZONE });
+
+if (config.PUBLIC_DEMO && usersRepository(db).count() === 0) {
+  if (config.masterKeyBytes === null) throw new Error('Public demo requires a master key');
+  await seedDatabase(db, 'demo', {
+    masterKey: config.masterKeyBytes,
+    migrationsDir: migrationsDir(),
+    timeZone: config.TIMEZONE
+  });
+  // Explicit public-demo provisioning keeps shared personas usable at any hour.
+  // Real deployments retain normal shift enforcement without these extensions.
+  for (const staff of DEMO_STAFF) {
+    const user = usersRepository(db).findByStaffId(staff.staffId);
+    if (user === undefined) throw new Error('Demo provisioning failed');
+    scheduledExtensionsRepository(db).insert({
+      id: randomUUID(),
+      user_id: user.id,
+      starts_at: new Date().toISOString(),
+      ends_at: '2099-01-01T00:00:00.000Z',
+      approved_by: 'GV-9101',
+      reason: 'Fictional-data public demo: all-hours evaluator access',
+      created_at: new Date().toISOString()
+    });
+  }
+}
 
 const app = createApp({
   db,

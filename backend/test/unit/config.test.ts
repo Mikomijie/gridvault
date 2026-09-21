@@ -14,6 +14,12 @@ function prodEnv(overrides: Record<string, string> = {}): NodeJS.ProcessEnv {
 }
 
 describe('production configuration gates (PRD 14.5)', () => {
+  it('requires explicit public-demo acknowledgement before enabling production personas', () => {
+    expect(loadConfig(prodEnv({ DEMO_MODE: 'true', PUBLIC_DEMO: 'true' })).PUBLIC_DEMO).toBe(true);
+    expect(() => loadConfig(prodEnv({ PUBLIC_DEMO: 'true' }))).toThrow(/PUBLIC_DEMO/);
+    expect(() => loadConfig(prodEnv({ DEMO_MODE: 'true', PUBLIC_DEMO: 'true', JWT_SECRET: 'short' }))).toThrow(/JWT_SECRET/);
+    expect(() => loadConfig(prodEnv({ DEMO_MODE: 'true', PUBLIC_DEMO: 'true', GRIDVAULT_MASTER_KEY: DEV_MASTER_KEY_B64 }))).toThrow(/development key/);
+  });
   it('AT-909: refuses to boot in production with DEMO_MODE=true, naming the variable', () => {
     let error: unknown;
     try {

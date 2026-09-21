@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { enqueueMutation, listQueuedMutations, removeQueuedMutation } from '../lib/queue.js';
-import { api } from '../lib/api.js';
+import { BASE_URL, api } from '../lib/api.js';
 
 const OfflineContext = createContext(null);
 
@@ -81,7 +81,7 @@ export function OfflineProvider({ children }) {
       setOnline(false);
       return undefined;
     }
-    const base = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080').replace(/\/+$/, '');
+    const base = BASE_URL;
     const beat = async () => {
       try {
         const res = await fetch(`${base}/api/health/ping`, { method: 'GET' });

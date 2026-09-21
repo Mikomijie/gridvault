@@ -1,3 +1,10 @@
+> **Current deployment scope: fictional-data public demo.** Follow
+> [the Vercel + Render deployment guide](docs/DEPLOYMENT.md). The older feature
+> narrative below includes aspirational claims: no ISO/FMOH certification,
+> Lagos/Abuja hosting, zero-data-loss guarantee, or clinical production readiness
+> is established by this repository. Use the deployment guide and decisions log
+> for current limitations; historical test badges are not a fresh verification.
+
 <div align="center">
 
 <img src="./frontend/public/images/hero.png" alt="GridVault | Sovereign Clinical EMR & Bedside Telemetry Vault" width="680" style="border-radius: 12px; margin-bottom: 20px;" />

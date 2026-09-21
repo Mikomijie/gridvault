@@ -122,6 +122,10 @@ export function createApp(options: CreateAppOptions): express.Express {
 
   const corsAllowedOrigins = authConfig.corsAllowedOrigins ?? [];
   const app = express();
+  app.use('/api', (_req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store');
+    next();
+  });
   app.use(securityHeaders({ allowedOrigins: corsAllowedOrigins }));
   // CORS preflight: JSON + Authorization make every mutating call
   // preflighted. Allowed origins get a 204 with credential support;

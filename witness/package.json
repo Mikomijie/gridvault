@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "start": "tsx src/index.ts"
+    "start": "node dist/src/index.js"
   },
   "dependencies": {
     "express": "^4.22.3"

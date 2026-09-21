@@ -2,6 +2,27 @@
 
 This document records architectural, design, and operational decisions where AGENTS.md was silent or delegated implementation details.
 
+### 2026-09-21 — Fictional-data public demo deployment
+
+- Use Vercel for the frontend and native Node 22 services on Render for API and
+  witness. Updated to Free plans without persistent disks at the user's request;
+  temporary data resets on spin-down, restart or redeploy. No Docker deployment is implied.
+- `PUBLIC_DEMO=true` plus `DEMO_MODE=true` explicitly permits shared demo
+  personas under the production runtime. Ordinary production still rejects
+  demo mode; production key checks remain. First startup seeds an empty
+  database, with scheduled duty extensions through 2099 for evaluator access.
+  Existing stores are not reset, and demo stores must never become clinical stores.
+- Keep real clocks, policy enforcement, Secure/HttpOnly/SameSite=Strict cookies,
+  and server-side authorization. Proxy `/api` through the frontend origin.
+- Exclude `/api` from service-worker interception, restrict asset caching, bump
+  the cache version to purge the old cache, and emit `Cache-Control: no-store`
+  on API responses. All frontend HTTP/SSE clients use the same base URL.
+- Copy migrations and rule JSON into the compiled backend distribution and fix
+  compiled startup paths. Add a demo notice, server-sourced account selectors,
+  and remove unsupported certification/uptime/test-count claims from the landing page.
+- See `DEPLOYMENT.md` for setup, verification, costs, and remaining limitations.
+  Hosting setup and browser checks still require actual service URLs.
+
 ---
 
 ### 2026-09-13 — Phase 0: Workspace Architecture and Package Management

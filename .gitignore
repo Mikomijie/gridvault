@@ -24,6 +24,9 @@ DESIGN.md
 !package-lock.json
 !.env.example
 !docker-compose.yml
+!render.yaml
+!/test/
+!/test/**
 !eslint.config.js
 !.prettierrc
 !.prettierignore

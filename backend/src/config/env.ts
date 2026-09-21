@@ -42,6 +42,7 @@ const envSchema = z.object({
     .string()
     .default('false')
     .transform((v) => v.trim().toLowerCase() === 'true'),
+  PUBLIC_DEMO: z.string().default('false').transform((v) => v === 'true'),
   ALLOW_INSECURE_HTTP: z
     .string()
     .default('false')
@@ -75,7 +76,7 @@ function decodeMasterKey(raw: string): Buffer {
 /**
  * Load and validate configuration. Throws ConfigError naming the offending
  * variable. Production gates (PRD 14.5, AT-909/AT-910):
- * - DEMO_MODE=true refuses to boot.
+ * - DEMO_MODE=true refuses to boot unless PUBLIC_DEMO explicitly acknowledges fictional data.
  * - Missing/short master key, or the development key value, refuses to boot.
  * - JWT_SECRET shorter than 32 characters refuses to boot.
  * - Running without TLS acknowledgement (ALLOW_INSECURE_HTTP=true) refuses
@@ -99,7 +100,7 @@ export function loadConfig(rawEnv: NodeJS.ProcessEnv = process.env): GridVaultCo
   }
 
   if (isProduction) {
-    if (env.DEMO_MODE) {
+    if (env.DEMO_MODE && !env.PUBLIC_DEMO) {
       throw new ConfigError(
         'DEMO_MODE',
         'must be false in production: demo personas and demo endpoints are disabled'
@@ -126,6 +127,10 @@ export function loadConfig(rawEnv: NodeJS.ProcessEnv = process.env): GridVaultCo
         'must be explicitly true to run production without TLS termination in front of the API'
       );
     }
+  }
+
+  if (env.PUBLIC_DEMO && !env.DEMO_MODE) {
+    throw new ConfigError('PUBLIC_DEMO', 'requires DEMO_MODE=true and fictional data only');
   }
 
   return { ...env, masterKeyBytes, isProduction };
