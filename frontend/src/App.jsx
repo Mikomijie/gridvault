@@ -42,11 +42,6 @@ function RequireAuth({ children }) {
 export default function App() {
   return (
     <ErrorBoundary>
-    {import.meta.env.VITE_PUBLIC_DEMO === 'true' && (
-      <div role="note" className="bg-amber-100 px-4 py-2 text-center text-sm text-amber-950">
-        Public demo — fictional patients and shared accounts. Do not enter real personal or medical information.
-      </div>
-    )}
     <AuthProvider>
       <OfflineProvider>
       <Router>
