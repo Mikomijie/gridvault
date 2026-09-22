@@ -82,7 +82,8 @@ migrate(db, { migrationsDir: migrationsDir(), timeZone: config.TIMEZONE });
 
 if (config.PUBLIC_DEMO && usersRepository(db).count() === 0) {
   if (config.masterKeyBytes === null) throw new Error('Public demo requires a master key');
-  await seedDatabase(db, { profile: 'demo', hashStrength: 'fast', masterKey: config.masterKeyBytes });
+  await seedDatabase(db, 'demo', { hashStrength: 'fast', masterKey: config.masterKeyBytes });
+
   for (const staff of DEMO_STAFF) {
     const user = usersRepository(db).findByStaffId(staff.staffId);
     if (user === undefined) throw new Error('Demo provisioning failed');
