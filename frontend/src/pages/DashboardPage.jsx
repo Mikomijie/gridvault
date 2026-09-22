@@ -99,8 +99,8 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const res = await api.getPatients();
-        setPatients(res.data.patients || []);
+        const res = await api.roster();
+setPatients(res.data || []);
         cacheRoster(res.data.patients || []);
         setFromCache(false);
       } catch (error) {
