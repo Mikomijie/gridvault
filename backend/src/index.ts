@@ -38,8 +38,6 @@ function loadConfigOrExit(): ReturnType<typeof loadConfig> {
 
 const config = loadConfigOrExit();
 
-// Fail boot loudly on invalid rule/threshold configuration (AT-409, PRD 9.2):
-// the node never runs with a rule silently disabled.
 try {
   loadAbuseRules();
 } catch (error) {
@@ -84,13 +82,7 @@ migrate(db, { migrationsDir: migrationsDir(), timeZone: config.TIMEZONE });
 
 if (config.PUBLIC_DEMO && usersRepository(db).count() === 0) {
   if (config.masterKeyBytes === null) throw new Error('Public demo requires a master key');
-  await seedDatabase(db, 'demo', {
-    masterKey: config.masterKeyBytes,
-    migrationsDir: migrationsDir(),
-    timeZone: config.TIMEZONE
-  });
-  // Explicit public-demo provisioning keeps shared personas usable at any hour.
-  // Real deployments retain normal shift enforcement without these extensions.
+  await seedDatabase(db, { profile: 'demo', hashStrength: 'fast', masterKey: config.masterKeyBytes });
   for (const staff of DEMO_STAFF) {
     const user = usersRepository(db).findByStaffId(staff.staffId);
     if (user === undefined) throw new Error('Demo provisioning failed');
@@ -104,6 +96,7 @@ if (config.PUBLIC_DEMO && usersRepository(db).count() === 0) {
       created_at: new Date().toISOString()
     });
   }
+  console.log('Public demo seeded with', DEMO_STAFF.length, 'staff and scheduled extensions.');
 }
 
 const app = createApp({
